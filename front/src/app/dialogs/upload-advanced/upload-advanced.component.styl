@@ -1,0 +1,64 @@
+.dialog-content
+  width 600px
+  max-width calc(80vw - 48px)
+
+  .advanced-warning
+    font-weight 600
+
+    .warning-header
+      color var(--warn-default)
+
+  .upload-files
+    display grid
+    grid-template-columns auto auto 1fr
+    grid-gap 8px
+    gap 8px
+    margin-bottom 20px
+
+    .file-format,
+    .upload-button,
+    .upload-file
+      display flex
+      justify-content flex-start
+      align-items center
+      min-height 32px
+
+    .upload-button
+      width 100px
+      position relative
+
+      .file-picker
+        flex-grow 1
+
+      .real-file-picker
+        position absolute
+        height 0
+        width 0
+        opacity 0
+        visibility hidden
+
+  .upload-settings
+    display grid
+    grid-template-columns auto 1fr
+    grid-gap 8px
+    gap 8px
+    margin-bottom 20px
+
+    .setting-header,
+    .setting-input
+      display flex
+      align-items center
+      justify-content flex-start
+
+    .setting-input .form-field
+      flex-grow 1
+
+  .error-message
+    margin-top 12px
+    font-size 16px
+    font-weight 600
+    color var(--warn-default)
+
+  .ok-message
+    font-size 16px
+    font-weight 600

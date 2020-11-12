@@ -1,0 +1,119 @@
+.page-container
+  height 100vh
+  width 90vw
+  overflow-x hidden
+  overflow-y auto
+  padding 0 5vw
+
+.tab
+  .table-top
+    width 100%
+    padding-top 20px
+    display flex
+    align-items center
+    height 80px
+
+    &.code-table-top
+      justify-content flex-end
+
+    .tag-form-field
+      flex 1 1 auto
+
+    button
+      flex 0 0 auto
+      margin-left 10px
+
+      &:last-child
+        margin-right 10px
+
+  .table-container
+    overflow-x auto
+
+  .user-table
+    min-width 400px
+
+  .code-table
+    min-width 350px
+
+  .mat-cell, .mat-header-cell
+    padding 16px
+
+    &:last-child
+      padding-right 0
+
+  .mat-header-cell
+    word-break keep-all
+
+  .mat-column-user,
+  .mat-column-code
+    width 100%
+    max-width 45vw
+    box-sizing border-box
+    overflow-x hidden
+
+  .user-wrapper
+    width 100%
+    height 100%
+    display flex
+    justify-content flex-start
+    align-items center
+
+    .user-avatar
+      height 30px
+      width 30px
+
+      .avatar-image
+        height 30px
+        width 30px
+        border-radius 15px
+        background #ddd
+
+        &.errored
+          display none
+
+      .pseudo-avatar-image
+        color #555
+        justify-content center
+        align-items center
+        user-select none
+        display none
+
+        &.errored
+          display flex
+
+    .user-name
+      margin-left 10px
+      max-width calc(45vw - 72px)
+      overflow hidden
+      white-space nowrap
+      text-overflow ellipsis
+
+  .code-content-wrapper
+    max-width calc(45vw - 32px)
+    overflow hidden
+    white-space nowrap
+    text-overflow ellipsis
+
+    .code-content
+      font-family var(--font-mono)
+      //user-select all
+
+  &.user-tab .mat-column-operation
+    min-width 160px
+
+  &.code-tab .mat-column-operation
+    min-width 80px
+
+    &.mat-header-cell
+      text-align center
+
+  .mat-column-select, .mat-column-privileged, .mat-column-frozen
+    text-align center
+
+  .paginator
+    position sticky
+    left 0
+
+.tab-group
+  margin-bottom 40px
+

@@ -1,0 +1,200 @@
+.page-container
+  height 100vh
+  width 90vw
+  overflow-x hidden
+  overflow-y auto
+  padding 0 5vw
+
+  .gallery-filter
+    display grid
+    grid-template-columns 1fr 1fr 0.8fr 1.2fr
+    grid-gap 24px
+    gap 24px
+
+    @media (max-width 1023px)
+      grid-template-columns 0.85fr 1.15fr
+      grid-gap 12px
+      gap 12px
+
+    @media (max-width 599px)
+      grid-template-columns 1fr
+
+    .tag-form
+      grid-column-start 1
+      grid-column-end 3
+      display flex
+      justify-content center
+      align-items center
+
+      @media (max-width 599px)
+        grid-column-end 2
+
+      .tag-form-field
+        width 100%
+
+    .filter-chooser
+      display flex
+      justify-content flex-start
+      align-items center
+
+      .choose-label
+        margin-right 8px
+
+    .time-chooser
+      opacity 0
+      visibility hidden
+      transition 0.3s
+
+      &.visible
+        opacity 1
+        visibility visible
+
+  .galleries
+    width 100%
+    margin-bottom 80px
+
+    .gallery-wall
+      margin 25px 0
+
+      .gallery-header-wrapper
+        z-index 1
+
+        .gallery-header
+          margin -5px -5px -5px -15px
+          padding 5px
+          background-color white
+          border-radius 5px
+          transition-duration 0.2s
+          line-height 40px
+          display inline-flex
+          align-items center
+
+        &.gallery-header-active .gallery-header
+          box-shadow 0 3px 3px -2px rgba(0, 0, 0, 0.2), 0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 1px 8px 0 rgba(0, 0, 0, 0.12)
+
+        .header-text-container
+          height 40px
+          margin 0 10px
+
+          .header-text
+            height 40px
+            line-height 40px
+            padding 0
+            margin 0
+            max-width 90vw
+            white-space nowrap
+            overflow hidden
+            text-overflow ellipsis
+            transition max-width 0.2s ease-in-out
+
+            &.select-toggle-show
+              max-width calc(90vw - 120px)
+              overflow-x auto
+              text-overflow unset
+
+            @media (pointer: fine) and (hover: hover)
+              &::-webkit-scrollbar
+                height 5px
+
+        &.gallery-header-active .header-text-container .header-text
+          max-width calc(95vw - 81px)
+          overflow-x auto
+          text-overflow unset
+
+          &.select-toggle-show
+            max-width calc(95vw - 201px)
+
+        .select-toggle-container
+          overflow hidden
+
+          .select-toggle
+            height 40px
+            width 120px
+
+      @media (min-width 600px)
+        .gallery-images
+          display flex
+          flex-wrap wrap
+
+          .gallery-image
+            height 130px
+            width 130px
+            margin 0 5px 5px 0
+
+      @media (min-width 1000px)
+        .gallery-images .gallery-image
+          height 160px
+          width 160px
+
+      @media (max-width 600px)
+        .gallery-images
+          display grid
+          grid-template-columns repeat(4, 1fr)
+          grid-gap 5px
+          gap 5px
+
+          .gallery-image
+            height 100%
+            width 100%
+
+      @media (max-width 399px)
+        .gallery-images
+          grid-template-columns repeat(3, 1fr)
+
+  .loading-indicator
+    position relative
+    display flex
+    margin 20px 20px 40px
+    justify-content center
+
+    .loading-indicator-sentinel
+      position absolute
+      height 186px
+      width 100%
+      top -186px
+      //top -82px !important
+      visibility hidden
+
+      @media (min-width 600px)
+        top -222px
+        height 222px
+
+      @media (min-width 1000px)
+        height 252px
+        top -252px
+
+      @media (max-width 600px)
+        height calc(22.5vw + 83.25px)
+        top calc(-22.5vw - 83.25px)
+
+      @media (max-width 399px)
+        height calc(30vw + 83.667px)
+        top calc(-30vw - 83.667px)
+
+    .indicator-container
+      display flex
+      flex-direction column
+      align-items center
+
+    .loading-indicator-info
+      margin 20px 0 0
+
+  .empty-indicator
+    margin-top 64px
+    display flex
+    color #555
+    justify-content center
+
+    .empty-button-upload
+      margin-left 10px
+
+.action-panel-container-6
+  transition visibility 0s 0s
+
+  &.hidden
+    transition visibility 0s 400ms
+    visibility hidden
+
+.info
+  height 25px
+  width 100%

@@ -1,0 +1,32 @@
+<h2 class="title" mat-dialog-title>{{'add_code_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content">
+  <form class="user-form" [formGroup]="codeForm">
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>
+        <label for="prompt-code">
+          {{'add_code_code' | i18nSelect:locale.dict}}
+        </label>
+      </mat-label>
+      <input matInput id="prompt-code" type="text" formControlName="code"
+             [placeholder]="'add_code_code' | i18nSelect:locale.dict">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>
+        <label for="prompt-times">
+          {{'add_code_times' | i18nSelect:locale.dict}}
+        </label>
+      </mat-label>
+      <input matInput id="prompt-times" type="number" formControlName="times"
+             [placeholder]="'add_code_times' | i18nSelect:locale.dict">
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-button mat-stroked-button [mat-dialog-close]="false">
+    {{'add_user_cancel' | i18nSelect:locale.dict}}
+  </button>
+  <button mat-flat-button class="transitioned-button strong-hover" (click)="addCode()"
+          [disabled]="codeForm.invalid" color="primary">
+    {{'add_user_submit' | i18nSelect:locale.dict}}
+  </button>
+</div>

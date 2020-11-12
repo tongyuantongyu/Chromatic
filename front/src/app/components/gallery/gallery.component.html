@@ -1,0 +1,182 @@
+<div class="page-container scrollable" #container>
+  <div class="top-padding" style="height: 80px; width: 100%"></div>
+  <h2 class="filter-header"></h2>
+  <div class="gallery-filter">
+    <div class="tag-form">
+      <mat-form-field class="tag-form-field">
+        <mat-label>
+          <label for="gallery-tag-input">{{'gallery_tag_search' | i18nSelect:locale.dict}}</label>
+        </mat-label>
+        <input matInput
+               id="gallery-tag-input"
+               [formControl]="tagForm"
+               type="text"
+               [matAutocomplete]="tagAutocomplete"
+               (keyup.enter)="setTagByEnter()"
+               [placeholder]="'gallery_tag_placeholder' | i18nSelect:locale.dict">
+        <mat-autocomplete #tagAutocomplete="matAutocomplete"
+                          class="scrollable"
+                          (optionSelected)="setTagByAutoComplete($event)">
+          <mat-option *ngFor="let option of filteredTags$ | async" [value]="option">
+            {{option || ('gallery_tag_empty' | i18nSelect:locale.dict)}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+    <div class="sort-chooser filter-chooser">
+      <span class="choose-label">{{'gallery_group_label' | i18nSelect:locale.dict}}</span>
+      <mat-button-toggle-group name="groupBy" [(ngModel)]="groupMode" (change)="changeGroup($event.value)">
+        <mat-button-toggle value="tag">{{'gallery_group_tag' | i18nSelect:locale.dict}}</mat-button-toggle>
+        <mat-button-toggle value="upload">{{'gallery_group_time' | i18nSelect:locale.dict}}</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+    <div class="time-chooser filter-chooser" [class.visible]="groupMode == 'upload'">
+      <span class="choose-label">{{'gallery_group_time_label' | i18nSelect:locale.dict}}</span>
+      <mat-button-toggle-group name="groupBy" [(ngModel)]="timeSpan" (change)="changeSpan($event.value)">
+        <mat-button-toggle value="day">{{'gallery_group_time_day' | i18nSelect:locale.dict}}</mat-button-toggle>
+        <mat-button-toggle value="week">{{'gallery_group_time_week' | i18nSelect:locale.dict}}</mat-button-toggle>
+        <mat-button-toggle value="month">{{'gallery_group_time_month' | i18nSelect:locale.dict}}</mat-button-toggle>
+        <mat-button-toggle value="year">{{'gallery_group_time_year' | i18nSelect:locale.dict}}</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+  <div class="galleries">
+    <div class="empty-indicator" *ngIf="gMgr.all && gMgr.images.length === 0">
+      <div class="empty-info mat-h2">
+        <span>{{(isSelf ? 'gallery_empty' : 'gallery_empty_other') | i18nSelect:locale.dict}}</span>
+        <button mat-button mat-stroked-button class="empty-button-upload" color="primary" *ngIf="isSelf"
+           (click)="showUpload()">
+          {{'gallery_empty_upload' | i18nSelect:locale.dict}}
+        </button>
+      </div>
+    </div>
+    <div class="gallery-wall" *ngFor="let gallery of gMgr.groups" #container  [@imageContainer]="gMgr.images.length">
+      <div awareSticky
+           stickyTop="10"
+           stickyBottom="20"
+           [stickyContainer]="container"
+           stickyStuckClass="gallery-header-active"
+           stickyPushUpClass="gallery-header-active"
+           class="gallery-header-wrapper">
+        <div class="gallery-header">
+          <div class="header-text-container">
+            <h2 class="header-text scrollable" [class.select-toggle-show]="selection.selected.length !== 0 && canEdit">
+              <ng-container *ngIf="groupMode === 'tag'">
+                {{gallery.by || ('gallery_tag_empty' | i18nSelect:locale.dict)}}
+              </ng-container>
+              <ng-container *ngIf="groupMode === 'upload'">
+                {{postFormat(
+                toInt(gallery.by) | date:spanFormat(locale.dict):null:(pref.get('locale') | async),
+                locale.dict)}}
+              </ng-container>
+            </h2>
+          </div>
+          <div class="select-toggle-container" *ngIf="selection.selected.length !== 0 && canEdit" @selectToggle>
+            <div class="select-toggle">
+              <button mat-button mat-icon-button
+                      class="select-toggle-button"
+                      (click)="selectMany(gallery.images)"
+                      [matTooltip]="'gallery_select_all_typed' | i18nSelect:locale.dict">
+                <mat-icon>select_all</mat-icon>
+              </button>
+              <button mat-button mat-icon-button
+                      class="select-toggle-button"
+                      (click)="deselectMany(gallery.images)"
+                      [matTooltip]="'gallery_deselect_all_typed' | i18nSelect:locale.dict">
+                <mat-icon>clear</mat-icon>
+              </button>
+              <button mat-button mat-icon-button
+                      class="select-toggle-button"
+                      (click)="reverseSelect(gallery.images)"
+                      [matTooltip]="'gallery_reverse_all_typed' | i18nSelect:locale.dict">
+                <mat-icon>flip_to_front</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="gallery-images">
+        <div class="gallery-image" *ngFor="let image of gallery.images; trackBy: forItemCheckBy">
+          <app-gallery-image [image]="image"
+                             (toggled)="toggleImage($event)"
+                             (clicked)="openOverlay($event, gallery)"
+                             [selected]="selection.isSelected(image)"
+                             [showSelect]="canEdit"
+                             [alwaysShowSelect]="selection.selected.length !== 0"></app-gallery-image>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="loading-indicator" *ngIf="!gMgr.all">
+    <div class="loading-indicator-sentinel" appIntersection (enter)="loadMore()" (leave)="cancelLoadMore()"></div>
+    <div class="indicator-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p class="loading-indicator-info">{{'gallery_loading' | i18nSelect:locale.dict}}</p>
+    </div>
+  </div>
+  <div class="info" *ngIf="gMgr.all">
+    <app-info></app-info>
+  </div>
+</div>
+<div class="action-panel-container-6" [class.hidden]="selection.selected.length === 0">
+  <div class="action-panel mat-elevation-z6"
+       [@panelFrame]="selection.selected.length !== 0 ? 'show' : 'hide'">
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="editSelect()"
+              [disabled]="!canEdit"
+              [matTooltip]="'gallery_action_edit' | i18nSelect:locale.dict">
+        <mat-icon>create</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="showCode()"
+              [matTooltip]="'gallery_action_code' | i18nSelect:locale.dict">
+        <mat-icon>code</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="deleteSelect()"
+              [disabled]="!canEdit"
+              [matTooltip]="'gallery_action_delete' | i18nSelect:locale.dict">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="selectAll()"
+              [matTooltip]="'gallery_action_select_all' | i18nSelect:locale.dict">
+        <mat-icon>select_all</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="reverseSelect()"
+              [matTooltip]="'gallery_action_select_reverse' | i18nSelect:locale.dict">
+        <mat-icon>flip_to_front</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="selection.clear()"
+              [matTooltip]="'gallery_action_done' | i18nSelect:locale.dict">
+        <mat-icon>done</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+

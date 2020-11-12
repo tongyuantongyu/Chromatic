@@ -1,0 +1,404 @@
+:host
+  display block !important
+
+.upload-container
+  width 50vw
+  max-width 750px
+  height 450px
+  max-height calc(100vh - 128px)
+  position absolute
+  bottom 0
+  right 0
+  z-index 10
+  background-color white
+
+  .upload-header
+    width 100%
+    height 56px
+    background-color var(--primary-lighter)
+    position relative
+    transition background-color 0.3s
+
+    .header-content-wrapper
+      display flex
+
+      .flex-element
+        height 56px
+        overflow hidden
+
+      .header-text
+        flex 1 100 auto
+
+        .header-text-inner
+          width calc(50vw - 112px)
+          max-width 638px
+          overflow hidden
+          text-overflow ellipsis
+          box-sizing border-box
+          padding 8px
+          line-height 40px
+          color white
+          height 56px
+
+          .header-h2
+            margin 0 0 0 12px
+            text-overflow ellipsis
+            line-height 40px
+            overflow hidden
+            white-space nowrap
+
+      .header-min-max
+        flex 0 0 auto
+
+      .header-close
+        flex 0 0.01 auto
+
+    .header-button-inner
+      height 56px
+      width 56px
+      display flex
+      justify-content center
+      align-items center
+
+    .header-button
+      color white
+
+    .header-progress-indicator
+      position absolute
+      z-index 0
+      top 0
+      left 0
+      height 56px
+      transition width 0.1s linear
+
+      &.show-progress
+        background-color rgba(255, 255, 255, 0.3)
+
+    &.succeed
+      background-color var(--status-green)
+
+    &.has-error
+      background-color var(--accent-default)
+
+    &.errored
+      background-color var(--warn-default)
+
+  @media (max-width 799px)
+    width 66.7vw
+
+    .upload-header .header-content-wrapper .header-text .header-text-inner
+      width calc(66.7vw - 112px)
+      max-width 66.7vw
+
+  @media (max-width 599px)
+    width 100vw
+
+    .upload-header .header-content-wrapper .header-text .header-text-inner
+      width calc(100vw - 112px)
+      max-width 100vw
+
+  .upload-content
+    width 100%
+    height calc(100% - 56px)
+    overflow hidden
+    position relative
+
+    .upload-content-wrapper
+      width 50vw
+      max-width 750px
+      height 394px
+      max-height calc(100vh - 184px)
+      overflow-x hidden
+      overflow-y auto
+
+  #upload-drop-file-area
+    width 50vw
+    max-width 750px
+    height 394px
+    max-height calc(100vh - 184px)
+    top 0
+    left 0
+    position absolute
+    display flex
+    justify-content center
+    align-items center
+    background #eee
+    z-index 1
+
+    &::before
+      position absolute
+      top 0
+      left 0
+      font-size 24px
+      content attr(file-drop-hint) " "
+      width 100%
+      height 100%
+      box-sizing border-box
+      background white
+      z-index 2
+      border 10px dashed #ccc
+      display flex
+      justify-content center
+      align-items center
+      opacity 0
+      visibility hidden
+      transition 0.3s
+
+    &.drag-over::before
+      opacity 1
+      visibility visible
+
+    .hint-wrapper
+      display flex
+      line-height 36px
+      font-weight 600
+
+      #file-picker
+        margin 0 5px
+
+      #real-file-picker
+        visibility hidden
+        height 0
+        width 0
+
+    .advanced-button
+      position absolute
+      top 10px
+      right 10px
+
+  .preview-mode-toggle
+    display flex
+    justify-content flex-end
+    align-items center
+    margin 20px
+
+    .choose-label
+      margin-right 10px
+
+    .preview-switch-height
+      margin-right 5px
+
+  .upload-title
+    margin-left 20px
+
+  .upload-files
+    margin 0 20px 20px
+    width calc(100% - 40px)
+
+    &.grid
+      display grid
+      grid-template-columns repeat(4, 1fr)
+      grid-gap 10px
+      gap 10px
+
+      .upload-file
+        width 100%
+        transition opacity 0.3s
+        background-color #eee
+
+        .preview-image-container
+          position relative
+          display flex
+          height 100%
+
+          .preview-image
+            width 100%
+            object-fit contain
+
+          .remove-button,
+          .result-hint
+            position absolute
+            right 0
+            top 0
+
+      &.limit-height .upload-file
+        height 0
+        padding-top 100%
+        position relative
+
+        .preview-image-container
+          position absolute
+          width 100%
+          top 0
+          left 0
+
+          .preview-image
+            height 100%
+            object-fit contain
+
+      .ghost-upload-file
+        opacity 0.5
+
+    &.list
+      .upload-file
+        width 100%
+        transition opacity 0.3s
+        height 75px
+        display flex
+        padding 8px 0
+
+        &:not(:last-child)
+          border-bottom 1px solid #ddd
+
+        .preview-image-container
+          position relative
+          flex 0 0 75px
+          display flex
+          height 100%
+
+          .preview-image
+            width 100%
+            object-fit contain
+
+          .remove-button,
+          .result-hint
+            position absolute
+            right -10px
+            top -10px
+
+        .preview-info-container
+          flex 1 1 auto
+          display flex
+          justify-content flex-start
+          align-items center
+          margin-left 10px
+
+          .preview-info
+            flex 1 1 auto
+            display inline-flex
+
+            .preview-filename
+              flex 0 1 auto
+              overflow hidden
+              white-space nowrap
+              text-overflow ellipsis
+              word-break break-all
+              max-width calc(100% - 160px)
+
+            .preview-size
+              flex 0 0 auto
+              color var(--primary-darker)
+
+            .preview-type
+              flex 0 0 auto
+              color var(--accent-darker)
+
+      .ghost-upload-file
+        opacity 0.5
+
+    .preview-image-container
+      &::after
+        content ""
+        position absolute
+        top 0
+        bottom 0
+        right 0
+        transition width 0.1s
+
+      &.uploading::after
+        width calc(100% - var(--upload-status))
+        background rgba(0,0,0,0.3)
+
+      &.errored::after
+        width 100%
+        background rgba(255,0,0,0.3)
+
+      .loading-hint
+        position absolute
+        top 0
+        left 0
+        width 100%
+        height 100%
+        background #eee
+        display flex
+        justify-content center
+        align-items center
+        color #888
+        opacity 1
+        visibility visible
+        transition opacity 0.3s, visibility 0.3s
+
+        &.loaded
+          opacity 0
+          visibility hidden
+
+        .hint-icon-container
+          text-align center
+          height 30px
+          width 30px
+          margin 0 auto 10px
+
+          .hint-icon
+            font-size 30px
+            line-height 30px
+            height 30px
+            width 30px
+            margin 0
+
+      .remove-button
+        z-index 2
+
+      .result-hint
+        width 40px
+        height 40px
+        display flex
+        justify-content center
+        align-items center
+        z-index 1
+
+        .done
+          color var(--status-green)
+
+        .error
+          color var(--warn-default)
+
+  #upload-settings-area
+    display grid
+    grid-template-columns auto auto 1fr
+    grid-gap 12px
+    gap 12px
+    margin 0 20px 20px
+
+    .field-header
+    .field-hint
+      display flex
+      align-items center
+
+    .field-input
+      display flex
+
+      .form-field
+        flex 1 1 auto
+
+    .field-tag-input
+      .special-domain-hint,
+      .origin-select-hint
+        font-weight 300
+        color #777
+        margin-left 5px
+
+  .final-operations
+    margin 0 20px 40px
+    display flex
+    justify-content flex-end
+
+    button:not(:last-child)
+      margin-right 20px
+
+  @media (max-width 799px)
+    width 66.7vw
+
+    .upload-content
+      .upload-content-wrapper
+      #upload-drop-file-area
+        width 66.7vw
+        max-width 66.7vw
+
+  @media (max-width 599px)
+    width 100vw
+
+    .upload-content
+      .upload-content-wrapper
+      #upload-drop-file-area
+        width 100vw
+        max-width 100vw

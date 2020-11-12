@@ -1,0 +1,40 @@
+<h2 class="title" mat-dialog-title>{{'add_user_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content">
+  <form class="user-form" [formGroup]="userForm">
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>
+        <label for="prompt-username">
+          {{'add_user_username' | i18nSelect:locale.dict}}
+        </label>
+      </mat-label>
+      <input matInput id="prompt-username" type="text" formControlName="username"
+             [placeholder]="'add_user_username' | i18nSelect:locale.dict">
+      <mat-error *ngIf="userForm.controls.username.hasError('userExist')">
+        {{'add_user_error_user_exist' | i18nSelect:locale.dict}}
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>
+        <label for="prompt-password">
+          {{'add_user_password' | i18nSelect:locale.dict}}
+        </label>
+      </mat-label>
+      <input matInput id="prompt-password" type="text" formControlName="password"
+             [placeholder]="'add_user_password' | i18nSelect:locale.dict">
+    </mat-form-field>
+    <div class="toggle-container">
+      <mat-checkbox formControlName="privileged" class="privileged-toggle">
+        {{'add_user_privileged' | i18nSelect:locale.dict}}
+      </mat-checkbox>
+    </div>
+  </form>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-button mat-stroked-button [mat-dialog-close]="false">
+    {{'add_user_cancel' | i18nSelect:locale.dict}}
+  </button>
+  <button mat-flat-button class="transitioned-button strong-hover" (click)="addUser()"
+          [disabled]="userForm.invalid" color="primary">
+    {{'add_user_submit' | i18nSelect:locale.dict}}
+  </button>
+</div>

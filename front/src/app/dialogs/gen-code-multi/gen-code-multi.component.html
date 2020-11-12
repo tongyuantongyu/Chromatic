@@ -1,0 +1,77 @@
+<h2 class="title" mat-dialog-title>{{'generate_code_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content scrollable dialog-content-scrollable-fix-80vh">
+  <h3 class="sort-header">
+    {{'generate_sort_title' | i18nSelect:locale.dict}}
+    <button mat-button class="sort-reverse" color="primary" (click)="reverse()">
+      {{'generate_sort_reverse' | i18nSelect:locale.dict}}
+    </button>
+  </h3>
+  <div class="sort-images-container" [sortablejs]="ids" [sortablejsOptions]="dragOptions">
+    <div class="sort-image-wrapper" *ngFor="let id of ids">
+      <div class="sort-image-container">
+        <img [src]="'/preview/' + id + '.i'" alt="" class="sort-image">
+      </div>
+    </div>
+  </div>
+  <h3 class="type-header">
+    {{'generate_code_type' | i18nSelect:locale.dict}}
+  </h3>
+  <div class="type-radio-chooser">
+    <mat-radio-group [(ngModel)]="type"
+                     [attr.aria-label]="'generate_code_type_label' | i18nSelect:locale.dict">
+      <mat-radio-button value="html">
+        {{'generate_type_html' | i18nSelect:locale.dict}}
+      </mat-radio-button>
+      <mat-radio-button value="bbcode">
+        {{'generate_type_bbcode' | i18nSelect:locale.dict}}
+      </mat-radio-button>
+      <mat-radio-button value="url">
+        {{'generate_type_url' | i18nSelect:locale.dict}}
+      </mat-radio-button>
+      <mat-radio-button value="custom">
+        {{'generate_type_custom' | i18nSelect:locale.dict}}
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
+  <div class="custom-input" *ngIf="type === 'custom'">
+    <mat-form-field appearance="fill" class="template-field">
+      <mat-label><label for="input-template">
+        {{'generate_custom_template' | i18nSelect:locale.dict}}
+      </label></mat-label>
+      <textarea matInput id="input-template"
+                [(ngModel)]="customizeTemplate"
+                [placeholder]="'generate_custom_template_placeholder' | i18nSelect:locale.dict"></textarea>
+      <mat-hint>
+        {{'generate_custom_template_hint' | i18nSelect:locale.dict}}
+      </mat-hint>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="separator-field">
+      <mat-label><label for="input-separator">
+        {{'generate_custom_separator' | i18nSelect:locale.dict}}
+      </label></mat-label>
+      <textarea matInput id="input-separator"
+                [(ngModel)]="customizeBetween"
+                [placeholder]="'generate_custom_separator_placeholder' | i18nSelect:locale.dict"></textarea>
+      <mat-hint>
+        {{'generate_custom_separator_hint' | i18nSelect:locale.dict}}
+      </mat-hint>
+    </mat-form-field>
+  </div>
+  <div class="code-area-wrapper">
+    <div class="code-area scrollable">
+      <code class="result-code" [innerText]="code"></code>
+    </div>
+    <div class="copy-button">
+      <button mat-button mat-icon-button
+              [matTooltip]="'generate_result_copy' | i18nSelect:locale.dict"
+              [cdkCopyToClipboard]="code" (cdkCopyToClipboardCopied)="copied()">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+    </div>
+  </div>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-stroked-button mat-button mat-dialog-close color="primary" cdkFocusInitial>
+    {{'generate_code_done' | i18nSelect:locale.dict}}
+  </button>
+</div>

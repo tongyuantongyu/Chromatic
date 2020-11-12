@@ -1,0 +1,72 @@
+<h2 class="title" mat-dialog-title>{{'format_pref_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content scrollable dialog-content-scrollable-fix-80vh">
+  <p class="preference-info">
+    <span class="info-header">
+      {{'format_pref_note_title' | i18nSelect:locale.dict}}
+    </span>
+    {{'format_pref_note_content' | i18nSelect:locale.dict}}
+  </p>
+  <div class="support">
+    <h3>{{'format_pref_support_status' | i18nSelect:locale.dict}}</h3>
+    <p>WEBP:
+      <ng-container [ngSwitch]="supportWebp">
+        <span *ngSwitchCase="null">
+          <mat-spinner class="status-icon status-spinner" diameter="24"></mat-spinner>
+          {{'format_pref_support_status_detecting' | i18nSelect:locale.dict}}
+        </span>
+        <span *ngSwitchCase="true" class="good-result">
+          <mat-icon class="status-icon">done</mat-icon>
+          {{'format_pref_support_status_supported' | i18nSelect:locale.dict}}
+        </span>
+        <span *ngSwitchCase="false" class="bad-result">
+          <mat-icon class="status-icon">clear</mat-icon>
+          {{'format_pref_support_status_not_supported' | i18nSelect:locale.dict}}
+        </span>
+      </ng-container>
+    </p>
+    <p>AVIF:
+      <ng-container [ngSwitch]="supportAvif">
+        <span *ngSwitchCase="null">
+          <mat-spinner class="status-icon status-spinner" diameter="24"></mat-spinner>
+          {{'format_pref_support_status_detecting' | i18nSelect:locale.dict}}
+        </span>
+        <span *ngSwitchCase="true" class="good-result">
+          <mat-icon class="status-icon">done</mat-icon>
+          {{'format_pref_support_status_supported' | i18nSelect:locale.dict}}
+        </span>
+        <span *ngSwitchCase="false" class="bad-result">
+          <mat-icon class="status-icon">clear</mat-icon>
+          {{'format_pref_support_status_not_supported' | i18nSelect:locale.dict}}
+        </span>
+      </ng-container>
+    </p>
+    <p>{{'format_pref_support_status_jpeg_png' | i18nSelect:locale.dict}}</p>
+  </div>
+  <div class="sort">
+    <h3>{{'format_pref_drag_hint' | i18nSelect:locale.dict}}</h3>
+    <div class="sorter-container" [sortablejs]="currentPreference" [sortablejsOptions]="dragOptions">
+      <div class="sort-item" *ngFor="let format of currentPreference">
+        {{format}}
+      </div>
+    </div>
+  </div>
+
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <div class="button-wrapper-normal">
+    <button mat-stroked-button mat-button color="warn" (click)="reset()">
+      {{'format_pref_reset' | i18nSelect:locale.dict}}
+    </button>
+  </div>
+  <div class="button-wrapper-wide">
+    <button mat-stroked-button mat-button mat-dialog-close color="primary" cdkFocusInitial class="button-cancel">
+      {{'format_pref_cancel' | i18nSelect:locale.dict}}
+    </button>
+  </div>
+  <div class="button-wrapper-normal">
+    <button mat-flat-button mat-button color="primary" class="transitioned-button strong-hover" (click)="save()">
+      {{'format_pref_save' | i18nSelect:locale.dict}}
+    </button>
+  </div>
+
+</div>

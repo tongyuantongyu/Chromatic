@@ -1,0 +1,45 @@
+.action-panel-sentinel
+  position fixed
+  width 100%
+  height 100px
+  left 0
+  bottom 0
+
+.action-panel-container-6
+  z-index 2
+  height 60px
+  position fixed
+  width 100%
+  display flex
+  justify-content center
+  left 0
+
+  .action-panel
+    height 40px
+    background white
+    padding 10px
+    opacity 0
+
+  @media (min-width 600px)
+    bottom 20px
+
+    .action-panel
+      width 290px
+      border-radius 5px
+      display flex
+
+      .action-button-container:not(:last-child)
+        margin-right 10px
+
+  @media (max-width 599px)
+    bottom 0
+
+    .action-panel
+      width 100%
+      display grid
+      grid-template-columns repeat(6, 1fr)
+
+      .action-button-container
+        display flex
+        justify-content center
+        align-items center

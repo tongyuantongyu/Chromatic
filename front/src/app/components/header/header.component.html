@@ -1,0 +1,51 @@
+<header class="header-container" *ngIf="isLogin$ | async"
+        (mouseenter)="enterHeader()" (mouseleave)="leaveHeader()">
+  <div class="stuff-wrapper mat-elevation-z3" [@header]="scrollExpand || hoverExpand || subExpand ? 'expanded': 'minified'">
+    <div class="stuff-container">
+      <app-language-picker iconStyle="icon" class="header-language"
+                           (menuOpened)="openSub()" (menuClosed)="closeSub()"></app-language-picker>
+      <button mat-button mat-icon-button class="header-preference"
+              (click)="openPreference()"
+              [matTooltip]="'header_image_pref' | i18nSelect:locale.dict">
+        <mat-icon>settings</mat-icon>
+      </button>
+      <div class="inflate"></div>
+      <a mat-button mat-icon-button class="header-admin" *ngIf="isAdmin$ | async"
+         [matTooltip]="'header_admin' | i18nSelect:locale.dict"
+         [routerLink]="['/admin']">
+        <mat-icon>admin_panel_settings</mat-icon>
+      </a>
+      <button mat-button mat-icon-button class="header-upload" [disabled]="(isFrozen$ | async)"
+         [matTooltip]="((isFrozen$ | async) ? 'header_upload_frozen' : 'header_upload') | i18nSelect:locale.dict"
+              (click)="showUpload()">
+        <mat-icon>publish</mat-icon>
+      </button>
+      <a mat-button mat-icon-button class="header-gallery"
+         [matTooltip]="'header_gallery' | i18nSelect:locale.dict"
+         [routerLink]="['/gallery', 'me']">
+        <mat-icon>collections</mat-icon>
+      </a>
+      <div class="header-avatar" [matMenuTriggerFor]="userMenu" (menuOpened)="openSub()" (menuClosed)="closeSub()">
+        <img *ngIf="!avatarError" (error)="avatarError = true"
+          [src]="'/avatar/' + (auth.user$ | async).id + '.i' + refresh" alt="avatar" class="avatar-image">
+        <div class="avatar-image pseudo-avatar-image" *ngIf="avatarError">
+          <mat-icon>person</mat-icon>
+        </div>
+      </div>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="changeAvatar()">
+          <mat-icon>account_circle</mat-icon>
+          <span>{{'header_change_avatar' | i18nSelect:locale.dict}}</span>
+        </button>
+        <button mat-menu-item (click)="changePassword()">
+          <mat-icon>vpn_key</mat-icon>
+          <span>{{'header_change_password' | i18nSelect:locale.dict}}</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon style="color: var(--warn-default)">exit_to_app</mat-icon>
+          <span style="color: var(--warn-default)">{{'header_logout' | i18nSelect:locale.dict}}</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,28 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <h1 class="site-header mat-display-3">Chromatic</h1>
+    <h2 class="site-subheader mat-display-1">{{'main_subtitle' | i18nSelect:locale.dict}}</h2>
+    <div class="operations">
+      <div class="operation-container">
+        <a mat-stroked-button [routerLink]="'/register'" class="operation-button">
+          {{'main_register' | i18nSelect:locale.dict}}
+        </a>
+      </div>
+      <div class="operation-container">
+        <a mat-flat-button [routerLink]="'/login'" class="operation-button transitioned-button">
+          {{'main_login' | i18nSelect:locale.dict}}
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="language-picker">
+    <app-language-picker></app-language-picker>
+  </div>
+  <div class="image-preference">
+    <button mat-fab color="primary"
+            class="transitioned-button strong-hover" (click)="openPreference()"
+            [matTooltip]="'header_image_pref' | i18nSelect:locale.dict">
+      <mat-icon>settings</mat-icon>
+    </button>
+  </div>
+</div>

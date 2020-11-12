@@ -1,0 +1,46 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <h2 class="site-header mat-display-1">{{'login_title' | i18nSelect:locale.dict}}</h2>
+    <mat-divider></mat-divider>
+    <form class="login-form" [formGroup]="loginForm"
+          (ngSubmit)="login(loginFormDirective)" #loginFormDirective="ngForm">
+      <div class="form-inputs scrollable">
+        <div class="form-inputs-inner">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label><label for="login-username">{{'login_username' | i18nSelect:locale.dict}}</label></mat-label>
+            <input matInput id="login-username" formControlName="username"
+                   [placeholder]="'login_username' | i18nSelect:locale.dict">
+            <mat-icon matSuffix>person</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label><label for="login-password">{{'login_password' | i18nSelect:locale.dict}}</label></mat-label>
+            <input matInput id="login-password" formControlName="password" type="password"
+                   [placeholder]="'login_password' | i18nSelect:locale.dict">
+            <mat-icon matSuffix>vpn_key</mat-icon>
+          </mat-form-field>
+          <div class="login-recaptcha-container">
+            <re-captcha formControlName="recaptcha"></re-captcha>
+          </div>
+        </div>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="operations">
+        <div class="operations-alter">
+          <a mat-stroked-button [routerLink]="['/register']">{{'login_action_register' | i18nSelect:locale.dict}}</a>
+        </div>
+        <div class="inflate"></div>
+        <div class="operations-main">
+          <button mat-flat-button type="submit" color="primary" [disabled]="loginForm.invalid" class="transitioned-button strong-hover">
+            {{'login_action_login' | i18nSelect:locale.dict}}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="info">
+    <app-info></app-info>
+  </div>
+  <div class="language-picker">
+    <app-language-picker></app-language-picker>
+  </div>
+</div>

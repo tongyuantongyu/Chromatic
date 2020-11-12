@@ -1,0 +1,19 @@
+*[awareSticky]
+  position sticky
+  top var(--sticky-top, 0px)
+  margin-bottom var(--sticky-bottom, 0px)
+
+.__aware-sticky-sentinel
+  position absolute
+  background transparent
+  visibility hidden
+  width 100%
+  left 0
+
+  &.__aware-sticky-sentinel-before
+    top calc(-1 * calc(2px + var(--sticky-top, 0px)))
+    height 1px
+
+  &.__aware-sticky-sentinel-after
+    bottom calc(-1 * calc(2px + var(--sticky-bottom, 0px)))
+    height 1px

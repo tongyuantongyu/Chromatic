@@ -1,0 +1,34 @@
+<div class="page-container scrollable" #container>
+  <div class="top-padding" style="height: 80px; width: 100%"></div>
+  <h1 class="top-header">
+    {{'about_title' | i18nSelect:locale.dict}}
+  </h1>
+  <p class="text">
+    {{'about_content' | i18nSelect:locale.dict}}
+  </p>
+  <h2 class="second-header">
+    {{'about_privacy' | i18nSelect:locale.dict}}
+  </h2>
+  <p class="text">
+    {{'about_privacy_content' | i18nSelect:locale.dict}}
+  </p>
+  <h2 class="second-header">
+    {{'about_based_on' | i18nSelect:locale.dict}}
+  </h2>
+  <p class="text">
+    {{'about_based_content' | i18nSelect:locale.dict}}
+  </p>
+  <div class="projects">
+    <div class="project mat-elevation-z2" *ngFor="let project of deps">
+      <div class="project-info-wrapper">
+        <h3 class="project-name">{{project.name}}</h3>
+        <p class="project-license">
+          {{project.license === 'other' ? ('about_license_other' | i18nSelect:locale.dict) : project.license}}
+        </p>
+      </div>
+      <a mat-button mat-icon-button [href]="project.link" class="project-url" target="_blank" rel="noopener">
+        <mat-icon>code</mat-icon>
+      </a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,277 @@
+<div class="upload-container mat-elevation-z7"
+     [@panel]="expand ? 'expand' : env.mode === 'desktop' ? 'mini' : 'pico'">
+  <div class="upload-header"
+       [class.succeed]="uploaded && errorCount === 0"
+       [class.has-error]="uploading && errorCount > 0"
+       [class.errored]="uploaded && errorCount > 0">
+    <div class="header-progress-indicator"
+         [class.show-progress]="uploading"
+         [style.width]="(totalUploaded / totalSize * 100) + '%'"></div>
+    <div class="header-content-wrapper">
+      <div class="flex-element header-text">
+        <div class="header-text-inner">
+          <h2 class="header-h2" [ngSwitch]="status">
+            <ng-container *ngSwitchCase="'select_files'">
+              {{'upload_title_select_files_p1' | i18nSelect:locale.dict}}
+              <span [app-plural]="files.length" [pluralSource]="'upload_title_file_plural'"></span>
+              {{'upload_title_select_files_p2' | i18nSelect:locale.dict}}
+            </ng-container>
+            <ng-container *ngSwitchCase="'uploading_fine'">
+              {{'upload_title_uploading_fine_p1' | i18nSelect:locale.dict}}
+              {{totalProgress | percent:'1.0-1':(pref.get('locale') | async)}}
+              {{'upload_title_uploading_fine_p2' | i18nSelect:locale.dict}}
+              <span [app-plural]="finishedCount" [pluralSource]="'upload_title_file_plural'"></span>
+              {{'upload_title_uploading_fine_p3' | i18nSelect:locale.dict}}
+            </ng-container>
+            <ng-container *ngSwitchCase="'uploading_some_error'">
+              {{'upload_title_uploading_some_error_p1' | i18nSelect:locale.dict}}
+              {{totalProgress | percent:'1.0-1':(pref.get('locale') | async)}}
+              {{'upload_title_uploading_some_error_p2' | i18nSelect:locale.dict}}
+              <span [app-plural]="finishedCount - errorCount" [pluralSource]="'upload_title_file_plural'"></span>
+              {{'upload_title_uploading_some_error_p3' | i18nSelect:locale.dict}}
+              <span [app-plural]="errorCount" [pluralSource]="'upload_title_file_plural'"></span>
+              {{'upload_title_uploading_some_error_p4' | i18nSelect:locale.dict}}
+            </ng-container>
+            <ng-container *ngSwitchCase="'uploaded_fine'">
+              {{'upload_title_uploaded_fine' | i18nSelect:locale.dict}}
+            </ng-container>
+            <ng-container *ngSwitchCase="'uploaded_some_error'">
+              {{'upload_title_uploaded_some_error_p1' | i18nSelect:locale.dict}}
+              <span [app-plural]="finishedCount - errorCount" [pluralSource]="'upload_title_file_plural'"></span>
+              {{'upload_title_uploaded_some_error_p2' | i18nSelect:locale.dict}}
+              <span [app-plural]="errorCount" [pluralSource]="'upload_title_file_plural'"></span>
+              {{'upload_title_uploaded_some_error_p3' | i18nSelect:locale.dict}}
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+              {{'upload_title_idle' | i18nSelect:locale.dict}}
+            </ng-container>
+          </h2>
+        </div>
+      </div>
+      <div class="flex-element header-min-max">
+        <div class="header-button-inner">
+          <button mat-button mat-icon-button class="header-button"
+                  (click)="expand = !expand"
+                  [matTooltip]="(expand ? 'upload_minimize' : 'upload_expand') | i18nSelect:locale.dict">
+            <mat-icon>{{expand ? 'remove' : 'add'}}</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="flex-element header-close">
+        <div class="header-button-inner">
+          <button mat-button mat-icon-button class="header-button" (click)="close()"
+                  [matTooltip]="'upload_close' | i18nSelect:locale.dict">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="upload-content">
+    <div class="upload-content-wrapper scrollable">
+      <div class="preview-mode-toggle">
+        <mat-slide-toggle [(ngModel)]="limitHeight" class="preview-switch-height">
+          {{'upload_preview_limit_height' | i18nSelect:locale.dict}}
+        </mat-slide-toggle>
+        <span class="choose-label">{{'upload_preview_type_header' | i18nSelect:locale.dict}}</span>
+        <mat-button-toggle-group name="groupBy" [(ngModel)]="detail">
+          <mat-button-toggle [value]="false">{{'upload_preview_type_grid' | i18nSelect:locale.dict}}</mat-button-toggle>
+          <mat-button-toggle [value]="true">{{'upload_preview_type_list' | i18nSelect:locale.dict}}</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+      <h3 class="upload-title preview-image-title">{{'upload_preview_title' | i18nSelect:locale.dict}}</h3>
+      <div class="upload-files" [class.list]="detail" [class.grid]="!detail" [class.limit-height]="limitHeight"
+           [sortablejs]="files" [sortablejsOptions]="dragOptions">
+        <div class="upload-file" *ngFor="let file of files">
+          <div class="preview-image-container"
+               [class.uploading]="uploading"
+               [class.errored]="(uploading || uploaded) && eachStatus.get(file).error.length > 0"
+               [style.--upload-status]="uploading ? ((eachStatus.get(file).progress || 0) * 100 + '%') : 0"
+               [matTooltip]="
+               ((uploading || uploaded) ? eachStatus.get(file).error : null) ||
+               file?.name ||
+               ('upload_file_name_unknown' | i18nSelect:locale.dict)">
+            <img [src]="file | asDataUrl | async" alt="" class="preview-image" (load)="hideLoading(loadingHint)">
+            <button mat-button mat-icon-button class="remove-button" color="warn" (click)="removeFile(file)"
+                    *ngIf="!uploading && !uploaded">
+              <mat-icon>cancel</mat-icon>
+            </button>
+            <div #loadingHint class="loading-hint">
+              <div class="hint-box">
+                <div class="hint-icon-container">
+                  <mat-spinner class="hint-icon" diameter="30"></mat-spinner>
+                </div>
+              </div>
+            </div>
+            <div class="result-hint">
+              <div class="processing"
+                   *ngIf="uploading && !eachStatus.get(file).done">
+                <mat-progress-spinner
+                  color="accent" diameter="24" strokeWidth="3"
+                  [mode]="eachStatus.get(file).progress > 0.99 ? 'indeterminate' : 'determinate'"
+                  [value]="eachStatus.get(file).progress * 100">
+                </mat-progress-spinner>
+              </div>
+              <div class="done" *ngIf="(uploading || uploaded) && eachStatus.get(file).done && !eachStatus.get(file).error">
+                <mat-icon>check_circle</mat-icon>
+              </div>
+              <div class="error" *ngIf="(uploading || uploaded) && eachStatus.get(file).error">
+                <mat-icon>error</mat-icon>
+              </div>
+            </div>
+          </div>
+          <div class="preview-info-container" *ngIf="detail">
+            <span class="preview-info">
+              <span class="preview-filename">
+                {{file?.name || ('upload_file_name_unknown' | i18nSelect:locale.dict)}}
+              </span>
+              ·
+              <span class="preview-size">
+                {{(file?.size || 0) | fileSize:'number' | number:'1.0-2':(pref.get('locale') | async)}}
+                {{(file?.size || 0) | fileSize:'unit'}}
+              </span>
+              ·
+              <span class="preview-type">
+                {{(file?.type || 'image/' + ('upload_file_type_unknown' | i18nSelect:locale.dict)) | slice:6 | uppercase}}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <h3 class="upload-title settings-title">{{'upload_info_form_title' | i18nSelect:locale.dict}}</h3>
+      <form id="upload-settings-area" [formGroup]="uploadInfoForm">
+        <div class="field-header">
+          <span class="field-text field-tag">
+            {{'upload_info_tag_header' | i18nSelect:locale.dict}}
+          </span>
+        </div>
+        <div class="field-hint">
+          <mat-icon [matTooltip]="'upload_info_tag_header_help' | i18nSelect:locale.dict">
+            help
+          </mat-icon>
+        </div>
+        <div class="field-input field-tag-input">
+          <mat-form-field class="form-field tag-form-field">
+            <mat-label>
+              <label for="tag-input">{{'upload_info_tag_header_placeholder' | i18nSelect:locale.dict}}</label>
+            </mat-label>
+            <input matInput
+                   id="tag-input"
+                   formControlName="tag"
+                   type="text"
+                   [matAutocomplete]="tagAutocomplete"
+                   [placeholder]="'gallery_tag_placeholder' | i18nSelect:locale.dict">
+            <mat-autocomplete #tagAutocomplete="matAutocomplete" class="scrollable">
+              <mat-option *ngFor="let option of filteredTags$ | async" [value]="option">
+                {{option || ('gallery_tag_empty' | i18nSelect:locale.dict)}}
+              </mat-option>
+              <mat-option [value]="null" disabled>
+                {{'upload_info_tag_header_hint' | i18nSelect:locale.dict}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+        <div class="field-header">
+          <span class="field-text field-origins">
+            {{'upload_info_allow_origins' | i18nSelect:locale.dict}}
+          </span>
+        </div>
+        <div class="field-hint">
+          <mat-icon [matTooltip]="'upload_info_allow_origins_help' | i18nSelect:locale.dict">
+            help
+          </mat-icon>
+        </div>
+        <div class="field-input field-origins-input">
+          <mat-form-field class="form-field origins-form-field">
+            <mat-label>
+              <label for="origins-input">{{'upload_info_allow_origins' | i18nSelect:locale.dict}}</label>
+            </mat-label>
+            <mat-chip-list #originsChipList [attr.aria-label]="'upload_info_allow_origins' | i18nSelect:locale.dict">
+              <mat-chip class="origins-chip"
+                        *ngFor="let domain of origins" selectable="true" removable="true"
+                        (removed)="removeDomain(domain)">
+                {{domain}}
+                <span *ngIf="domain === '*'" class="special-domain-hint">
+                  {{'upload_info_allow_origins_any' |i18nSelect:locale.dict}}
+                </span>
+                <span *ngIf="domain === ' '" class="special-domain-hint">
+                  {{'upload_info_allow_origins_none' |i18nSelect:locale.dict}}
+                </span>
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+              <input
+                id="origins-input"
+                #originsInput
+                [formControl]="originsControl"
+                [placeholder]="'upload_info_allow_origins_placeholder' | i18nSelect:locale.dict"
+                [matAutocomplete]="originsAuto"
+                [matChipInputFor]="originsChipList"
+                [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                (matChipInputTokenEnd)="originsInputSubmit($event)">
+            </mat-chip-list>
+            <mat-autocomplete autoActiveFirstOption #originsAuto="matAutocomplete" class="scrollable"
+                              (optionSelected)="addDomain($event)">
+              <mat-option *ngFor="let domain of suggestOrigins$ | async" [value]="domain.origin" [disabled]="domain.bad">
+                <span class="origins-select-origin">
+                  {{domain.origin}}
+                </span>
+                <span [ngSwitch]="domain.type" class="origin-select-hint">
+                  <ng-container *ngSwitchCase="'exact'">
+                    {{'upload_info_allow_origins_exact' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'wildcard'">
+                    {{'upload_info_allow_origins_wildcard' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'any'">
+                    {{'upload_info_allow_origins_any' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'none'">
+                    {{'upload_info_allow_origins_none' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'bad'">
+                    {{'upload_info_allow_origins_bad' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngIf="domain.bad && domain.type !== 'bad'">
+                    {{'upload_info_allow_origins_exist' |i18nSelect:locale.dict}}
+                  </ng-container>
+                </span>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+      </form>
+      <div class="final-operations">
+        <button mat-button mat-stroked-button color="warn" (click)="reset()" type="button">
+          {{'upload_operation_reset' | i18nSelect:locale.dict}}
+        </button>
+        <button mat-button mat-flat-button color="primary" (click)="post()" type="button"
+                [disabled]="uploading || uploaded">
+          {{'upload_operation_submit' | i18nSelect:locale.dict}}
+        </button>
+      </div>
+    </div>
+    <form id="upload-drop-file-area" *ngIf="dragArea" @fade
+          (dragover)="this.noDefault($event)"
+          (dragenter)="fileDragEnter($event)"
+          (dragleave)="fileDragLeave($event)"
+          (drop)="submitByDrop($event)"
+          [class.drag-over]="dragOver"
+          [attr.file-drop-hint]="'upload_drop_file_release' | i18nSelect:locale.dict">
+      <div class="hint-wrapper">
+        <span>{{'upload_drop_file_pre' | i18nSelect:locale.dict}}</span>
+        <div class="file-picker">
+          <button mat-button mat-stroked-button color="primary" id="file-picker" (click)="fileSelectClick()" type="button">
+            {{'upload_drop_file_picker' | i18nSelect:locale.dict}}
+          </button>
+          <input #filePicker type="file" id="real-file-picker" (change)="submitByButton()" multiple>
+        </div>
+        <span>{{'upload_drop_file_post' | i18nSelect:locale.dict}}</span>
+      </div>
+      <button mat-button mat-stroked-button *ngIf="showAdvanced"
+              color="primary" class="advanced-button" (click)="goAdvanced()" type="button">
+        {{'upload_advanced_button' | i18nSelect:locale.dict}}
+      </button>
+    </form>
+  </div>
+</div>
+

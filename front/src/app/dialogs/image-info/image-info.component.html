@@ -1,0 +1,75 @@
+<h2 class="title" mat-dialog-title>{{'info_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content scrollable dialog-content-scrollable-fix-80vh scrollable-y">
+  <div class="header header-user">
+    {{'info_user' | i18nSelect:locale.dict}}
+  </div>
+  <div class="content content-user">
+    <span class="user-name">
+      {{image.user_name}}
+    </span>
+    <div class="user-avatar">
+      <img *ngIf="!avatarError" (error)="avatarError = true"
+           [src]="'/avatar/' + image.user_id + '.i'" alt="avatar" class="avatar-image">
+      <div class="avatar-image pseudo-avatar-image" *ngIf="avatarError">
+        <mat-icon>person</mat-icon>
+      </div>
+    </div>
+  </div>
+  <div class="header header-tag">
+    {{'info_tag' | i18nSelect:locale.dict}}
+  </div>
+  <div class="content content-user">
+    <span class="user-name">
+      {{image.tag || ('gallery_tag_empty' | i18nSelect:locale.dict)}}
+    </span>
+  </div>
+  <div class="header header-upload">
+    {{'info_upload_time' | i18nSelect:locale.dict}}
+  </div>
+  <div class="content content-upload">
+    <span class="upload-time">
+      {{image.upload | date:'medium':null:(pref.get('locale') | async)}}
+    </span>
+  </div>
+  <div class="header header-view">
+    {{'info_view' | i18nSelect:locale.dict}}
+  </div>
+  <div class="content content-view">
+    <span class="upload-time">
+      {{image.view}}
+    </span>
+  </div>
+  <div class="header header-origins">
+    {{'info_origins' | i18nSelect:locale.dict}}
+  </div>
+  <div class="content content-origins">
+    <mat-chip-list [attr.aria-label]="'info_origins' | i18nSelect:locale.dict">
+      <mat-chip *ngFor="let domain of image.origins">
+        {{domain}}
+        <span *ngIf="domain === '*'" class="special-domain-hint">
+          {{'upload_info_allow_origins_any' |i18nSelect:locale.dict}}
+        </span>
+        <span *ngIf="domain === ' '" class="special-domain-hint">
+          {{'upload_info_allow_origins_none' |i18nSelect:locale.dict}}
+        </span>
+      </mat-chip>
+    </mat-chip-list>
+  </div>
+  <div class="header header-formats">
+    {{'info_formats' | i18nSelect:locale.dict}}
+  </div>
+  <div class="content content-formats">
+    <mat-chip-list [attr.aria-label]="'info_formats' | i18nSelect:locale.dict">
+      <mat-chip *ngFor="let format of image.files" selected
+                [color]="format.hash ? 'primary' : null"
+                [matTooltip]="(format.hash ? 'info_formats_available' : 'info_formats_encoding') | i18nSelect:locale.dict">
+        {{format.format}}
+      </mat-chip>
+    </mat-chip-list>
+  </div>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-stroked-button mat-button mat-dialog-close cdkFocusInitial color="primary">
+    {{'info_done' | i18nSelect:locale.dict}}
+  </button>
+</div>
