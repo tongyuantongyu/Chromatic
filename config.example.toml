@@ -1,0 +1,47 @@
+[site]
+# the address to listen to
+listen = ":8080"
+# the host users accessed from.
+host = "localhost"
+# image storage path
+storage = "./storage"
+# static assets path
+static = "./static"
+# allowed max size (in bytes) of request body
+body_size = 52428800
+# max number of images info allowed to get per request
+max_list = 100
+# size of user avatar
+avatar_size = 256
+# size of image preview
+preview_size = 256
+# max image size
+max_size = 8192
+# generate avif when view count reaches this number
+avif_threshold = 100
+# run in debug mode
+debug = false
+# compression thread count (0 for auto)
+thread = 0
+
+[database]
+# uri to connect to mongodb
+mongo_uri = "mongodb://localhost:27017"
+# name of database to be used
+db_name = "image"
+
+[security]
+# a random string to ensure password safety
+salt = "salt"
+# a random string to ensure seesion safety
+hmac = "hmac"
+# default password of admin account
+admin_password = "adminadmin"
+# recaptcha key. Note that the key below is the official test key
+recaptcha = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+
+[https]
+# tls cert file
+cert = ""
+# tls cert key file
+key = ""

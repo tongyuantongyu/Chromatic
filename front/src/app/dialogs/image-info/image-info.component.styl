@@ -1,0 +1,39 @@
+.dialog-content
+  width 800px
+  padding-bottom 10px
+  max-width calc(80vw - 48px)
+  display grid
+  grid-template-columns auto 1fr
+  grid-gap 12px
+  gap 12px
+
+  .header
+    display flex
+    align-items center
+    justify-content flex-start
+    min-height 32px
+
+  .content
+    display flex
+    align-items center
+    justify-content flex-start
+    flex-wrap wrap
+    min-height 32px
+
+    .user-avatar
+      height 30px
+      width 30px
+      margin-left 12px
+
+      .avatar-image
+        height 30px
+        width 30px
+        border-radius 15px
+        background #ddd
+
+      .pseudo-avatar-image
+        color #555
+        display flex
+        justify-content center
+        align-items center
+        user-select none

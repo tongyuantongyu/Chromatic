@@ -1,0 +1,7 @@
+<app-header class="app-header"></app-header>
+<router-outlet></router-outlet>
+<div class="upload-wrapper" [@routeAnimation]="getAnimationData(uploadOutlet)">
+  <router-outlet name="upload" #uploadOutlet="outlet"></router-outlet>
+</div>
+
+

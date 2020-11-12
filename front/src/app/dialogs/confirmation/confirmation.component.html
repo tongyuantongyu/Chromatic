@@ -1,0 +1,15 @@
+<h2 class="title" mat-dialog-title>{{(config.type + '_confirm_title') | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content">
+  <p class="dialog-message">
+    {{(config.type + '_confirm_word') | i18nSelect:locale.dict}}
+  </p>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-button mat-stroked-button [mat-dialog-close]="false">
+    {{(config.type + '_confirm_no') | i18nSelect:locale.dict}}
+  </button>
+  <button mat-flat-button class="transitioned-button strong-hover"
+          [mat-dialog-close]="true" [color]="config.severe ? 'warn' : 'primary'">
+    {{(config.type + '_confirm_yes') | i18nSelect:locale.dict}}
+  </button>
+</div>

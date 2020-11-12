@@ -1,0 +1,97 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@import '~@angular/material/theming';
+// Plus imports for other components in your app.
+
+$font-sans: "Source Sans Pro", sans-serif;
+$font-serif: "Source Serif Pro", serif;
+$font-mono: "Fira Code", monospace;
+
+:root {
+  --font-sans: "Source Sans Pro", sans-serif;
+  --font-serif: "Source Serif Pro", serif;
+  --font-mono: "Fira Code", monospace;
+}
+
+$custom-typography: mat-typography-config(
+  $font-family: $font-sans,
+  $display-4: mat-typography-level(112px, 112px, 700, $font-serif, -0.05em),
+  $display-3: mat-typography-level(56px, 56px, 700, $font-serif, -0.02em),
+  $display-2: mat-typography-level(45px, 48px, 600, $font-serif, -0.005em),
+  $display-1: mat-typography-level(34px, 40px, 600, $font-serif),
+  $headline: mat-typography-level(24px, 32px, 700, $font-serif),
+  $title: mat-typography-level(20px, 32px, 600, $font-serif),
+  $subheading-2: mat-typography-level(16px, 28px, 600, $font-serif),
+  $subheading-1: mat-typography-level(15px, 24px, 600, $font-serif),
+  $body-2: mat-typography-level(14px, 24px, 600, $font-sans),
+  $body-1: mat-typography-level(14px, 20px, 400, $font-sans),
+  $caption: mat-typography-level(12px, 20px, 400, $font-sans),
+  $button: mat-typography-level(14px, 14px, 600, $font-sans),
+    // Line-height must be unit-less fraction of the font-size.
+  $input: mat-typography-level(inherit, 1.125, 400, $font-mono)
+);
+
+// Override typography CSS classes (e.g., mat-h1, mat-display-1, mat-typography, etc.).
+@include mat-base-typography($custom-typography);
+
+// Override typography for a specific Angular Material components.
+@include mat-checkbox-typography($custom-typography);
+
+// Override typography for all Angular Material, including mat-base-typography and all components.
+@include angular-material-typography($custom-typography);
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+// Override the typography in the core CSS.
+@include mat-core($custom-typography);
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://material.io/design/color/
+$front-primary: mat-palette($mat-deep-purple, 400, 300, 700);
+$front-accent: mat-palette($mat-lime, 600, 100, 800);
+
+// The warn palette is optional (defaults to red).
+$front-warn: mat-palette($mat-red);
+
+// Create the theme object. A theme consists of configurations for individual
+// theming systems such as "color" or "typography".
+$front-theme: mat-light-theme((
+  color: (
+    primary: $front-primary,
+    accent: $front-accent,
+    warn: $front-warn,
+  )
+));
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include angular-material-theme($front-theme);
+
+$-export-color-settings: map_get($front-theme, color);
+$-export-primary: map_get($-export-color-settings, primary);
+$-export-accent: map_get($-export-color-settings, accent);
+$-export-warn: map_get($-export-color-settings, warn);
+
+:root {
+  --primary-default: #{map_get($-export-primary, default)};
+  --primary-lighter: #{map_get($-export-primary, lighter)};
+  --primary-darker: #{map_get($-export-primary, darker)};
+
+  --accent-default: #{map_get($-export-accent, default)};
+  --accent-lighter: #{map_get($-export-accent, lighter)};
+  --accent-darker: #{map_get($-export-accent, darker)};
+
+  --warn-default: #{map_get($-export-warn, default)};
+  --warn-lighter: #{map_get($-export-warn, lighter)};
+  --warn-darker: #{map_get($-export-warn, darker)};
+
+  --status-green: #4caf50;
+}
+
+body {
+  margin: 0;
+  font-family: #{$font-sans};
+}

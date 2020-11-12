@@ -1,0 +1,22 @@
+<h2 class="title" mat-dialog-title>{{(config.type + '_prompt_title') | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content">
+  <mat-form-field appearance="outline" class="form-field">
+    <mat-label>
+      <label for="prompt-input">
+        {{(config.type + '_prompt_label') | i18nSelect:locale.dict}}
+      </label>
+    </mat-label>
+    <input matInput id="prompt-input" [formControl]="inputValue" [type]="config.type"
+           [placeholder]="(config.type + '_prompt_placeholder') | i18nSelect:locale.dict">
+  </mat-form-field>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-button mat-stroked-button [mat-dialog-close]="null">
+    {{(config.type + '_prompt_no') | i18nSelect:locale.dict}}
+  </button>
+  <button mat-flat-button class="transitioned-button strong-hover"
+          [disabled]="inputValue.invalid"
+          [mat-dialog-close]="inputValue.value" color="primary">
+    {{(config.type + '_prompt_yes') | i18nSelect:locale.dict}}
+  </button>
+</div>

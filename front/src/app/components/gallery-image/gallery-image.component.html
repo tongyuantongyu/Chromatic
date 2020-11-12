@@ -1,0 +1,33 @@
+<div class="image-container">
+  <div class="bad-image-hint hint" *ngIf="error">
+    <div class="hint-box">
+      <div class="hint-icon-container">
+        <mat-icon class="hint-icon">broken_image</mat-icon>
+      </div>
+      <div class="hint-message">
+        {{'gallery_broken_image' | i18nSelect:locale.dict}}
+      </div>
+    </div>
+  </div>
+  <div class="image" *ngIf="!error" [class.selected]="selected" [class.load]="loaded" (click)="overlayClick()">
+    <img [src]="'/preview/' + image.id + '.i'" alt="" (load)="onload()" (error)="onerror()" loading="lazy">
+  </div>
+  <div class="loading-hint hint" @loading *ngIf="!loaded">
+    <div class="hint-box">
+      <div class="hint-icon-container">
+        <mat-spinner class="hint-icon" diameter="30"></mat-spinner>
+      </div>
+      <div class="hint-message">
+        {{'gallery_loading' | i18nSelect:locale.dict}}
+      </div>
+    </div>
+  </div>
+  <div class="select-overlay" *ngIf="loaded && showSelect"
+       [class.show]="alwaysShowSelect || selected"
+       [class.selected]="selected" longPress
+       (longPressStart)="selectClick();longPressStart()" (longPressEnd)="longPressEnd($event)" (click)="overlayClick()">
+    <button mat-button mat-icon-button class="select-button" [color]="selected ? 'accent' : null" (click)="selectClick($event)">
+      <mat-icon>check_circle</mat-icon>
+    </button>
+  </div>
+</div>

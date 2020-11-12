@@ -1,0 +1,15 @@
+# IDE
+.idea
+
+debug-server
+exec
+test
+dev-docs
+
+# real config file
+config.toml
+
+cmake-*
+c/debug
+c/release
+c/libs/*

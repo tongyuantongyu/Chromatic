@@ -1,0 +1,37 @@
+<h2 class="title" mat-dialog-title>{{'generate_code_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content scrollable dialog-content-scrollable-fix-80vh">
+  <h3 class="type-header">
+    {{'generate_code_type' | i18nSelect:locale.dict}}
+  </h3>
+  <div class="type-radio-chooser">
+    <mat-radio-group [(ngModel)]="type"
+      [attr.aria-label]="'generate_code_type_label' | i18nSelect:locale.dict">
+      <mat-radio-button value="html">
+        {{'generate_type_html' | i18nSelect:locale.dict}}
+      </mat-radio-button>
+      <mat-radio-button value="bbcode">
+        {{'generate_type_bbcode' | i18nSelect:locale.dict}}
+      </mat-radio-button>
+      <mat-radio-button value="url">
+        {{'generate_type_url' | i18nSelect:locale.dict}}
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
+  <div class="code-area-wrapper">
+    <div class="code-area scrollable">
+      <code class="result-code" [innerText]="code"></code>
+    </div>
+    <div class="copy-button">
+      <button mat-button mat-icon-button
+              [matTooltip]="'generate_result_copy' | i18nSelect:locale.dict"
+              [cdkCopyToClipboard]="code" (cdkCopyToClipboardCopied)="copied()">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+    </div>
+  </div>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-stroked-button mat-button mat-dialog-close color="primary">
+    {{'generate_code_done' | i18nSelect:locale.dict}}
+  </button>
+</div>

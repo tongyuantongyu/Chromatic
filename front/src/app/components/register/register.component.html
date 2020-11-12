@@ -1,0 +1,84 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <h2 class="site-header mat-display-1">{{'register_title' | i18nSelect:locale.dict}}</h2>
+    <mat-divider></mat-divider>
+    <form class="register-form" [formGroup]="registerForm"
+          (ngSubmit)="register(registerFormDirective)" #registerFormDirective="ngForm">
+      <div class="form-inputs scrollable">
+        <div class="form-inputs-inner">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label><label for="register-username">{{'register_username' | i18nSelect:locale.dict}}</label></mat-label>
+            <input matInput id="register-username" formControlName="username"
+                   [placeholder]="'register_username' | i18nSelect:locale.dict">
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="registerForm.controls.username.hasError('userExist')">
+              {{'register_error_user_exist' | i18nSelect:locale.dict}}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="form-field form-field-extend">
+            <mat-label><label for="register-password">{{'register_password' | i18nSelect:locale.dict}}</label></mat-label>
+            <input matInput id="register-password" formControlName="password"
+                   [type]="passwordVisible ? 'text' : 'password'"
+                   [placeholder]="'register_password' | i18nSelect:locale.dict">
+            <button mat-button mat-icon-button type="button" matSuffix
+                    (click)="passwordVisible = !passwordVisible" class="password-visible-toggle"
+                    [matTooltip]="(passwordVisible ? 'register_password_hide' : 'register_password_see') | i18nSelect:locale.dict">
+              <mat-icon>{{passwordVisible ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-hint *ngIf="!registerForm.controls.password.hasError('weakPassword')">
+              {{'register_hint_password' | i18nSelect:locale.dict}}
+            </mat-hint>
+            <mat-error *ngIf="registerForm.controls.password.hasError('weakPassword')">
+              {{'register_error_password_weak' | i18nSelect:locale.dict}}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>
+              <label for="register-password-repeat">{{'register_password_repeat' | i18nSelect:locale.dict}}</label>
+            </mat-label>
+            <input matInput id="register-password-repeat" formControlName="passwordConfirm"
+                   [type]="passwordVisible ? 'text' : 'password'"
+                   [placeholder]="'register_password_repeat' | i18nSelect:locale.dict"
+                   [errorStateMatcher]="passwordErrorStateMatcher">
+            <button mat-button mat-icon-button type="button" matSuffix
+                    (click)="passwordVisible = !passwordVisible" class="password-visible-toggle"
+                    [matTooltip]="(passwordVisible ? 'register_password_hide' : 'register_password_see') | i18nSelect:locale.dict">
+              <mat-icon>{{passwordVisible ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="registerForm.hasError('passwordMismatch')">
+              {{'register_error_password_mismatch' | i18nSelect:locale.dict}}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label><label for="register-invite">{{'register_code' | i18nSelect:locale.dict}}</label></mat-label>
+            <input matInput id="register-invite" formControlName="invite_code"
+                   [placeholder]="'register_code' | i18nSelect:locale.dict">
+            <mat-icon matSuffix>code</mat-icon>
+          </mat-form-field>
+          <div class="register-recaptcha-container">
+            <re-captcha formControlName="recaptcha"></re-captcha>
+          </div>
+        </div>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="operations">
+        <div class="operations-alter">
+          <a mat-stroked-button [routerLink]="['/login']">{{'register_action_login' | i18nSelect:locale.dict}}</a>
+        </div>
+        <div class="inflate"></div>
+        <div class="operations-main">
+          <button mat-flat-button type="submit" color="primary" [disabled]="registerForm.invalid"
+                  class="transitioned-button strong-hover">
+            {{'register_action_register' | i18nSelect:locale.dict}}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="info">
+    <app-info></app-info>
+  </div>
+  <div class="language-picker">
+    <app-language-picker></app-language-picker>
+  </div>
+</div>

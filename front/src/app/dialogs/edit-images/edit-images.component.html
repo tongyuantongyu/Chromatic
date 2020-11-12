@@ -1,0 +1,98 @@
+<h2 class="title" mat-dialog-title>{{'edit_images_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content scrollable dialog-content-scrollable-fix-80vh">
+  <mat-tab-group dynamicHeight [(selectedIndex)]="selectedTab">
+    <mat-tab [label]="'edit_images_tab_tag' | i18nSelect:locale.dict">
+      <div class="field-input field-tag-input">
+        <h3>{{'edit_images_title_tag' | i18nSelect:locale.dict}}</h3>
+        <mat-form-field class="form-field tag-form-field">
+          <mat-label>
+            <label for="tag-input">{{'upload_info_tag_header_placeholder' | i18nSelect:locale.dict}}</label>
+          </mat-label>
+          <input matInput
+                 id="tag-input"
+                 [formControl]="tagControl"
+                 type="text"
+                 [matAutocomplete]="tagAutocomplete"
+                 [placeholder]="'gallery_tag_placeholder' | i18nSelect:locale.dict">
+          <mat-autocomplete #tagAutocomplete="matAutocomplete" class="scrollable">
+            <mat-option *ngFor="let option of filteredTags$ | async" [value]="option">
+              {{option || ('gallery_tag_empty' | i18nSelect:locale.dict)}}
+            </mat-option>
+            <mat-option [value]="null" disabled>
+              {{'upload_info_tag_header_hint' | i18nSelect:locale.dict}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+    </mat-tab>
+    <mat-tab [label]="'edit_images_tab_origins' | i18nSelect:locale.dict">
+      <div class="field-input field-origins-input">
+        <h3>{{'edit_images_title_origins' | i18nSelect:locale.dict}}</h3>
+        <mat-form-field class="form-field origins-form-field">
+          <mat-label>
+            <label for="origins-input">{{'upload_info_allow_origins' | i18nSelect:locale.dict}}</label>
+          </mat-label>
+          <mat-chip-list #originsChipList [attr.aria-label]="'upload_info_allow_origins' | i18nSelect:locale.dict">
+            <mat-chip class="origins-chip"
+                      *ngFor="let domain of origins" selectable="true" removable="true"
+                      (removed)="removeDomain(domain)">
+              {{domain}}
+              <span *ngIf="domain === '*'" class="special-domain-hint">
+                {{'upload_info_allow_origins_any' |i18nSelect:locale.dict}}
+              </span>
+              <span *ngIf="domain === ' '" class="special-domain-hint">
+                {{'upload_info_allow_origins_none' |i18nSelect:locale.dict}}
+              </span>
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+            <input
+              id="origins-input"
+              #originsInput
+              [formControl]="originsControl"
+              [placeholder]="'upload_info_allow_origins_placeholder' | i18nSelect:locale.dict"
+              [matAutocomplete]="originsAuto"
+              [matChipInputFor]="originsChipList"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              (matChipInputTokenEnd)="originsInputSubmit($event)">
+          </mat-chip-list>
+          <mat-autocomplete autoActiveFirstOption #originsAuto="matAutocomplete" class="scrollable"
+                            (optionSelected)="addDomain($event)">
+            <mat-option *ngFor="let domain of suggestOrigins$ | async" [value]="domain.origin" [disabled]="domain.bad">
+                <span class="origins-select-origin">
+                  {{domain.origin}}
+                </span>
+              <span [ngSwitch]="domain.type" class="origin-select-hint">
+                  <ng-container *ngSwitchCase="'exact'">
+                    {{'upload_info_allow_origins_exact' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'wildcard'">
+                    {{'upload_info_allow_origins_wildcard' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'any'">
+                    {{'upload_info_allow_origins_any' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'none'">
+                    {{'upload_info_allow_origins_none' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'bad'">
+                    {{'upload_info_allow_origins_bad' |i18nSelect:locale.dict}}
+                  </ng-container>
+                  <ng-container *ngIf="domain.bad && domain.type !== 'bad'">
+                    {{'upload_info_allow_origins_exist' |i18nSelect:locale.dict}}
+                  </ng-container>
+                </span>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-button mat-stroked-button mat-dialog-close>
+    {{'dialog_cancel' | i18nSelect:locale.dict}}
+  </button>
+  <button mat-flat-button color="primary" class="transitioned-button strong-hover" [mat-dialog-close]="result">
+    {{'dialog_submit' | i18nSelect:locale.dict}}
+  </button>
+</div>

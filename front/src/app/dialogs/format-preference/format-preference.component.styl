@@ -1,0 +1,51 @@
+.dialog-content
+  width 600px
+  max-width calc(80vw - 48px)
+
+  .info-header
+    font-weight 600
+
+  .good-result
+    color var(--status-green)
+
+  .bad-result
+    color var(--warn-default)
+
+  .status-icon
+    vertical-align bottom
+
+    &.status-spinner
+      display inline-block
+      vertical-align middle
+
+  .sorter-container
+    width 100%
+    display flex
+    border 1px solid #ddd
+    background-color white
+    border-radius 5px
+    margin-bottom 20px
+
+    .sort-item
+      flex 1 1 auto
+      display flex
+      justify-content center
+      align-items center
+      user-select none
+      cursor move
+      border-right 1px solid #ddd
+      padding 10px
+
+      &:last-child
+        border none
+
+.button-wrapper-normal
+  flex 0 1 auto
+
+.button-wrapper-wide
+  flex 1 1 auto
+  display flex
+  justify-content flex-end
+
+.button-cancel
+  margin-right 10px

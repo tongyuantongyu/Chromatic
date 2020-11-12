@@ -1,0 +1,60 @@
+.header-container
+  width 100%
+  position relative
+
+  .stuff-wrapper
+    position absolute
+    width calc(100vw - 24px)
+    right 0
+    top 0
+    height 40px
+    padding 12px
+    background-color var(--primary-lighter)
+    overflow hidden
+
+    .stuff-container
+      display flex
+      flex-direction row
+      float right
+      width calc(100vw - 24px)
+
+    .header-avatar
+      height 40px
+      width 40px
+      top 0
+      right 0
+      flex 0 0 auto
+      margin-left 24px
+
+      .avatar-image
+        height 40px
+        width 40px
+        border-radius 20px
+        background #ddd
+
+      .pseudo-avatar-image
+        color #555
+        display flex
+        justify-content center
+        align-items center
+        user-select none
+
+    .header-upload,
+    .header-gallery,
+    .header-preference
+      margin-left 12px
+
+      &[disabled]
+        color #ccc
+
+    .header-admin,
+    .header-preference,
+    .header-gallery,
+    .header-language,
+    .header-upload
+      flex 0 0 auto
+      color white
+
+    .inflate
+      flex 1 1 auto
+

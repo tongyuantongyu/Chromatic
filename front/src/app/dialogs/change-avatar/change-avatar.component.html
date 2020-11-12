@@ -1,0 +1,46 @@
+<h2 class="title" mat-dialog-title>{{'change_password_title' | i18nSelect:locale.dict}}</h2>
+<mat-dialog-content class="dialog-content scrollable scrollable-y dialog-content-scrollable-fix-80vh">
+  <h3 class="note">{{'change_avatar_title_pick_file' | i18nSelect:locale.dict}}</h3>
+  <div class="file-picker">
+    <button mat-button mat-stroked-button color="primary" id="file-picker" cdkFocusInitial (click)="filePicker.click()">
+      {{'change_avatar_file_selector' | i18nSelect:locale.dict}}
+    </button>
+    <input #filePicker type="file" id="real-file-picker" accept="image/png, image/jpeg" (change)="fileChangeEvent($event)">
+  </div>
+  <h3 class="note note-crop">{{'change_avatar_title_crop' | i18nSelect:locale.dict}}</h3>
+  <div class="image-cropper" (pointerup)="cropperUp()">
+    <div class="cropper-container">
+      <image-cropper
+        class="cropper"
+        [imageChangedEvent]="imageChangedEvent"
+        maintainAspectRatio="true"
+        aspectRatio="1"
+        resizeToWidth="256"
+        format="png"
+        (imageCropped)="imageCropped($event)"
+        (loadImageFailed)="loadImageFailed()"
+        backgroundColor="white"
+      ></image-cropper>
+    </div>
+
+    <div class="cropped" *ngIf="!croppedImage">
+      {{'change_avatar_preview_no_file' | i18nSelect:locale.dict}}
+    </div>
+
+    <div class="cropped" *ngIf="croppedImage">
+      <span class="cropped-hint">{{'change_avatar_preview' | i18nSelect:locale.dict}}</span>
+      <img [src]="croppedImage" class="cropped-image" alt="cropped image"/>
+      <div class="cropped-overlay"></div>
+    </div>
+
+  </div>
+</mat-dialog-content>
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-button mat-stroked-button  [mat-dialog-close]="false">
+    {{'change_avatar_cancel' | i18nSelect:locale.dict}}
+  </button>
+  <button mat-flat-button class="transitioned-button strong-hover" (click)="setAvatar()"
+          color="primary" [disabled]="!croppedImage || uploading">
+    {{'change_avatar_submit' | i18nSelect:locale.dict}}
+  </button>
+</div>

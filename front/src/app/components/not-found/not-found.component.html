@@ -1,0 +1,13 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <h1 class="site-header mat-display-3">{{'not_found_title' | i18nSelect:locale.dict}}</h1>
+    <h2 class="site-subheader mat-display-1">{{'not_found_word' | i18nSelect:locale.dict}}</h2>
+    <div class="operations">
+      <div class="operation-container">
+        <a mat-stroked-button [routerLink]="'/'" class="operation-button">
+          {{'not_found_back' | i18nSelect:locale.dict}}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

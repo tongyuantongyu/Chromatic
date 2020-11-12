@@ -1,0 +1,25 @@
+.info-container
+  display flex
+  justify-content center
+  align-items center
+  height 100%
+  width 100%
+
+  .info-para
+    font-size 12px
+    line-height 12px
+    margin 0
+
+    .info-item
+      color #555
+      text-decoration none
+      transition color 0.3s
+
+      &:hover
+        color #777
+
+      &:not(:last-child)::after
+        content ' | '
+        font-family var(--font-mono)
+        user-select none
+        color #888

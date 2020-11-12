@@ -1,0 +1,44 @@
+.dialog-content
+  overflow-x hidden
+  overflow-y auto
+  width 1024px
+  max-width calc(80vw - 48px)
+
+.type-radio-chooser
+  line-height 30px
+
+  .mat-radio-button:not(:last-child)
+    margin-right 10px
+
+.code-area-wrapper
+  margin-top 20px
+  background-color #eee
+  border 1px solid #ccc
+  border-radius 5px
+  min-height 20px
+  position relative
+
+  .code-area
+    white-space nowrap
+    overflow auto
+    padding 10px
+    max-height 300px
+
+    .result-code
+      font-family var(--font-mono)
+      user-select all
+
+  .copy-button
+    position absolute
+    top 0
+    right 0
+    opacity 0
+    visibility hidden
+    transition opacity 0.3s 0.5s, visibility 0.3s 0.5s
+    background-color #eee
+    border-radius 20px
+
+  &:hover .copy-button
+    opacity 1
+    visibility visible
+    transition opacity 0.3s, visibility 0.3s

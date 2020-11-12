@@ -1,0 +1,84 @@
+<div class="image-wrapper">
+  <img [src]="'/image/' + image.id + '.i'" alt="" class="overlay-image"
+       longPress
+       (longPressStart)="imageLongPress($event)"
+       (click)="imageClicked($event)"
+       (load)="imageLoad()"
+       (loadedmetadata)="imageLoad()"
+       (longPressEnd)="imageLongPressEnd($event)"
+       (contextmenu)="$event.preventDefault()">
+  <div class="loading-hint hint" @loading *ngIf="loading">
+    <div class="hint-box">
+      <div class="hint-icon-container">
+        <mat-spinner class="hint-icon" diameter="75"></mat-spinner>
+      </div>
+      <div class="hint-message">
+        {{'gallery_loading' | i18nSelect:locale.dict}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="action-panel-sentinel" (pointerenter)="increaseShowPanel()" (pointerleave)="waitDecreaseShowPanel()"></div>
+<div class="action-panel-container-6" (pointerenter)="increaseShowPanel()" (pointerleave)="waitDecreaseShowPanel()">
+  <div class="action-panel mat-elevation-z6"
+       [@panelFrame]="closeFired ? 'closed' : (loading || init) ? 'hide' : showPanelVote > 0 ? 'show' : 'hide'">
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="showInfo()"
+              [matTooltip]="'gallery_overlay_action_info' | i18nSelect:locale.dict">
+        <mat-icon>info</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <a mat-button mat-icon-button
+         color="primary"
+         class="select-toggle-button"
+         [href]="'/image/' + image.id + '.i'"
+         target="_blank"
+         [matTooltip]="'gallery_overlay_action_open' | i18nSelect:locale.dict">
+        <mat-icon>open_in_new</mat-icon>
+      </a>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="editImage()"
+              [disabled]="!canEdit"
+              [matTooltip]="'gallery_overlay_action_edit' | i18nSelect:locale.dict">
+        <mat-icon>create</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="showCode()"
+              [matTooltip]="'gallery_overlay_action_code' | i18nSelect:locale.dict">
+        <mat-icon>code</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="deleteImage()"
+              [disabled]="!canEdit"
+              [matTooltip]="'gallery_overlay_action_delete' | i18nSelect:locale.dict">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+    <div class="action-button-container">
+      <button mat-button mat-icon-button
+              color="primary"
+              class="select-toggle-button"
+              (click)="close()"
+              [matTooltip]="'gallery_overlay_action_close' | i18nSelect:locale.dict">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
