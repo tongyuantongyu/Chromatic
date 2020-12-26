@@ -113,6 +113,7 @@ export class UploadComponent implements OnInit {
   dragTimeoutId = 0;
 
   files: File[] = [];
+  fileUrls: string[] = [];
 
   detail = false;
   limitHeight = true;

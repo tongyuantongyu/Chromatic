@@ -3,16 +3,22 @@ package main
 import (
 	"ImageServer/gcnotifier"
 	"ImageServer/native"
+	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/gin-gonic/gin"
+	"github.com/mattn/go-colorable"
+	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"runtime"
+	"time"
 )
 
 var config Config
 
 func init() {
+
 	config.SetDefault()
 	if c, err := ioutil.ReadFile("./config.toml"); err == nil {
 		if err = toml.Unmarshal(c, &config); err != nil {
@@ -46,6 +52,18 @@ func init() {
 	
 	if !config.Site.Debug {
 		gin.SetMode(gin.ReleaseMode)
+	}
+
+	if runtime.GOOS == "windows" {
+		gin.DefaultWriter = colorable.NewColorableStdout()
+	}
+
+	if config.Site.WriteLog {
+		if f, err := os.OpenFile(config.Site.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666); err == nil {
+			gin.DefaultWriter = io.MultiWriter(gin.DefaultWriter, f)
+		} else {
+			log.Fatalf("Failed open log file: %s", err)
+		}
 	}
 	
 	InitUser()
@@ -135,7 +153,40 @@ func RegisterRoute(r *gin.Engine) {
 }
 
 func main() {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		var statusColor, methodColor, resetColor string
+		if param.IsOutputColor() {
+			statusColor = param.StatusCodeColor()
+			methodColor = param.MethodColor()
+			resetColor = param.ResetColor()
+		}
+
+		if param.Latency > time.Minute {
+			param.Latency = param.Latency - param.Latency%time.Second
+		}
+
+		ext := ""
+
+		if extI, exist := param.Keys["Served-Ext"]; exist {
+			if extS, ok := extI.(string); ok {
+				ext = fmt.Sprintf("(%5s)", extS)
+			}
+		}
+
+		return fmt.Sprintf("[LOG] %v |%s %3d %s| %13v | %15s |%s %-7s %s%s %s %#v\n%s",
+			param.TimeStamp.Format("2006/01/02 - 15:04:05"),
+			statusColor, param.StatusCode, resetColor,
+			param.Latency,
+			param.ClientIP,
+			methodColor, param.Method, resetColor,
+			param.Path,
+			ext,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	}), gin.Recovery())
+
 	router.MaxMultipartMemory = int64(config.Site.BodySize) // 50MB
 	
 	RegisterRoute(router)

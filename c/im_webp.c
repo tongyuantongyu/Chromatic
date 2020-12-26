@@ -120,12 +120,9 @@ bool EncWEBP(u8** data, size_t* size, Frame *img) {
   // allow multi thread encode
   config.thread_level = 1;
 
-  // enhance image quality
-  config.use_sharp_yuv = 1;
-
-
   picture.width = img->width;
   picture.height = img->height;
+  picture.use_argb = 1;
 
   Frame* src = img;
 
@@ -161,6 +158,8 @@ bool EncWEBP(u8** data, size_t* size, Frame *img) {
       // not implemented
       goto cleanup;
   }
+
+  WebPPictureSharpARGBToYUVA(&picture);
 
   picture.writer = WebPMemoryWrite;
   picture.custom_ptr = (void*)&memory_writer;

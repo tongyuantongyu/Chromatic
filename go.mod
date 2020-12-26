@@ -11,7 +11,7 @@ require (
 	github.com/golang/gddo v0.0.0-20200831202555-721e228c7686
 	github.com/json-iterator/go v1.1.10
 	github.com/liut/jpegquality v0.0.0-20200606101153-6dd6284fded6
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
+	github.com/mattn/go-colorable v0.0.10-0.20170816031813-ad5389df28cd
 	go.mongodb.org/mongo-driver v1.4.0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 )

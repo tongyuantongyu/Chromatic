@@ -72,6 +72,7 @@ import {AddCodeComponent} from './dialogs/add-code/add-code.component';
 import {NotFoundComponent} from './components/not-found/not-found.component';
 import {FormatPreferenceComponent} from './dialogs/format-preference/format-preference.component';
 import {AboutComponent} from './components/about/about.component';
+import { AsObjectUrlPipe } from './pipes/as-object-url.pipe';
 
 registerLocaleData(localeZH_CN, 'zh-CN');
 registerLocaleData(localeZH_TW, 'zh-TW');
@@ -113,7 +114,8 @@ registerLocaleData(localeJA, 'ja');
     AddCodeComponent,
     NotFoundComponent,
     FormatPreferenceComponent,
-    AboutComponent
+    AboutComponent,
+    AsObjectUrlPipe
   ],
   imports: [
     BrowserModule,

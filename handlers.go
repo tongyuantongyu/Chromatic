@@ -617,7 +617,10 @@ func getImageFile(c *gin.Context) {
 	}
 	
 	// stupid (old) edge doesn't claims itself to support webp, despite it actually do
-	if strings.Contains(accept, "image/webp") || strings.Contains(ua, "Edge/18") {
+	// Flutter(Dart) actually support webp, enable it
+	if strings.Contains(accept, "image/webp") ||
+		strings.Contains(ua, "Edge/18") ||
+		strings.Contains(ua, "dart:io") {
 		compatSupport = append(compatSupport, "webp")
 	}
 	
@@ -648,10 +651,12 @@ func getImageFile(c *gin.Context) {
 	}
 	
 	origin := ""
+	scheme := "http"
 	if org := c.GetHeader("Origin"); org != "" {
 		u, err := url.Parse(org)
 		if err == nil {
 			origin = u.Host
+			scheme = u.Scheme
 		} else if err.Error() == "missing protocol scheme" {
 			if u, err := url.Parse("http://" + org); err == nil {
 				origin = u.Host
@@ -664,6 +669,7 @@ func getImageFile(c *gin.Context) {
 			u, err := url.Parse(ref)
 			if err == nil {
 				origin = u.Host
+				scheme = u.Scheme
 			} else if err.Error() == "missing protocol scheme" {
 				if u, err := url.Parse("http://" + ref); err == nil {
 					origin = u.Host
@@ -674,6 +680,8 @@ func getImageFile(c *gin.Context) {
 	
 	im, err := GetImage(id)
 	
+	c.Header("Vary", "Accept, User-Agent, Origin, Referer")
+	
 	if err == EImageNotExist {
 		c.Status(http.StatusNotFound)
 		return
@@ -683,7 +691,14 @@ func getImageFile(c *gin.Context) {
 	}
 	
 	//goland:noinspection GoNilness
-	if origin != config.Site.Host && !VerifyHostname(origin, im.Origins) {
+	if origin == config.Site.Host {
+	} else if VerifyHostname(origin, im.Origins) {
+		if origin != "" {
+			c.Header("Access-Control-Allow-Origin", fmt.Sprintf("%s://%s", scheme, origin))
+		} else {
+			c.Header("Access-Control-Allow-Origin", fmt.Sprintf("https://%s", c.Request.Host))
+		}
+	} else {
 		c.Status(http.StatusForbidden)
 		return
 	}
@@ -720,6 +735,7 @@ func getImageFile(c *gin.Context) {
 	
 	if eTag := c.GetHeader("If-None-Match"); eTag != "" {
 		if eTag == strconv.FormatUint(tag, 16) {
+			c.Set("Served-Ext", "cache")
 			c.Status(http.StatusNotModified)
 			return
 		}
@@ -734,6 +750,7 @@ func getImageFile(c *gin.Context) {
 	c.Header("Content-Type", "image/" + ext)
 	c.Header("ETag", strconv.FormatUint(tag, 16))
 	c.File(p)
+	c.Set("Served-Ext", ext)
 	
 	//goland:noinspection GoNilness
 	if origin != config.Site.Host {

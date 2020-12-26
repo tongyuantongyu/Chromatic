@@ -34,7 +34,11 @@ func InitEncoder() {
 	_avifQueue = make(chan primitive.ObjectID, 100)
 	go func() {
 		for {
-			_ = genAvifImage(<-_avifQueue)
+			r := <- _avifQueue
+
+			if err := genAvifImage(r); err != EOk {
+				fmt.Printf("[Err ] Failed generate AVIF image for %s: Error code %d\n", r, int(err))
+			}
 		}
 	}()
 }
@@ -645,7 +649,7 @@ func PostVisitImage(r primitive.ObjectID, emitAvif bool) SErr {
 			log.Printf("[Warn] failed adding avif placeholder of %s: %s\n", r, err)
 			return EUnknown
 		}
-		
+
 		GenAvif(r)
 	}
 	

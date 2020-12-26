@@ -15,6 +15,9 @@ type ConfigSite struct {
 	
 	Debug bool `toml:"debug"`
 	Thread uint64 `toml:"thread"`
+
+	WriteLog bool `toml:"write_log"`
+	LogFile string `toml:"log_file"`
 }
 
 type ConfigDatabase struct {
@@ -53,6 +56,8 @@ func (c *Config) SetDefault() {
 	c.Site.PreviewSize = 256
 	c.Site.MaxSize = 8192
 	c.Site.AvifThreshold = 100
+
+	c.Site.WriteLog = false
 	
 	c.DB.MongoUri = "mongodb://localhost:27017"
 	c.DB.DBName = "image"

@@ -160,9 +160,9 @@ type LoginQ struct {
 }
 
 func Login(r *LoginQ) (*User, SErr) {
-	if e := RecaptchaVerify(r.Recaptcha); e != EOk {
-		return nil, e
-	}
+	//if e := RecaptchaVerify(r.Recaptcha); e != EOk {
+	//	return nil, e
+	//}
 	
 	u := &User{}
 	

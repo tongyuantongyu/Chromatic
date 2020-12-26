@@ -132,7 +132,7 @@ export class GalleryManagerService {
         this.grouper = this.byTime;
     }
 
-    this.reGroup();
+    // this.reGroup();
   }
 
   public setID(id: string): void {

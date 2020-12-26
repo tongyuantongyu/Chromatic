@@ -7,6 +7,7 @@ html-minifier --collapse-whitespace \
               --remove-script-type-attributes \
               --remove-style-link-type-attributes \
               --remove-empty-attributes \
+              --minify-css \
               -o index.html index.html
 # minify manifest json
 minify-json manifest.json

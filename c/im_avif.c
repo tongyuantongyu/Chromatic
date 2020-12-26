@@ -30,10 +30,13 @@ i32 AVIFQualityTransform(u8 quality) {
 
 bool IsAVIF(const u8 *data, size_t size, u32* width, u32* height) {
   avifDecoder *decoder = avifDecoderCreate();
-  avifROData source = {data, size};
   bool readResult = false;
 
-  if (avifDecoderParse(decoder, &source) != AVIF_RESULT_OK) {
+  if (avifDecoderSetIOMemory(decoder, data, size) != AVIF_RESULT_OK) {
+    goto cleanup;
+  }
+
+  if (avifDecoderParse(decoder) != AVIF_RESULT_OK) {
     goto cleanup;
   }
 
@@ -52,13 +55,16 @@ bool DecAVIF(const u8 *data, size_t size, Frame *img) {
     return false;
   }
 
-  avifROData source = {data, size};
   bool readResult = false;
 
   avifImage* image = avifImageCreateEmpty();
   avifDecoder* decoder = avifDecoderCreate();
   avifResult result;
-  result = avifDecoderRead(decoder, image, &source);
+  if (avifDecoderSetIOMemory(decoder, data, size) != AVIF_RESULT_OK) {
+    goto cleanup;
+  }
+
+  result = avifDecoderRead(decoder, image);
 
   if (result != AVIF_RESULT_OK) {
     goto cleanup;
@@ -70,6 +76,7 @@ bool DecAVIF(const u8 *data, size_t size, Frame *img) {
 
   avifRGBImage rgb;
   avifRGBImageSetDefaults(&rgb, image);
+  rgb.chromaUpsampling = AVIF_CHROMA_UPSAMPLING_BILINEAR;
 
   if (!image->alphaPlane) {
     rgb.format = AVIF_RGB_FORMAT_RGB;
@@ -78,9 +85,7 @@ bool DecAVIF(const u8 *data, size_t size, Frame *img) {
     img->format = FORMAT_RGBA;
   }
 
-  if (image->depth > 8) {
-    rgb.depth = 16;
-  }
+  rgb.depth = 8;
 
   img->width = rgb.width;
   img->height = rgb.height;
@@ -131,7 +136,7 @@ bool EncAVIF(u8** data, size_t* size, Frame *img) {
   // Currently we are forced to use limited range
   // because Firefox assume everything in limited range.
   // However we are also forced to use 8bit
-  // because Chrome is buggy on high color depth big image.
+  // because 10bit decoding is incredibly slow
 
   // Now we can only use the most simple limited range 8 bit content.
   // Sorry for possible color banding :(
@@ -144,8 +149,8 @@ bool EncAVIF(u8** data, size_t* size, Frame *img) {
   image->yuvRange = AVIF_RANGE_LIMITED;
 
   //defaults
-  image->colorPrimaries = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
-  image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED;
+  image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+  image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
   image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
 
   avifRGBImage rgb;
@@ -183,10 +188,6 @@ bool EncAVIF(u8** data, size_t* size, Frame *img) {
 
   avifImageRGBToYUV(image, &rgb);
 
-  // rav1e can't utilize full CPU unless image is really huge, aom can
-  // rav1e use less memory, aom use more
-  // rav1e is 18% slower than aom under single thread
-  // so sorry rav1e
   encoder->codecChoice = AVIF_CODEC_CHOICE_AOM;
 
   // however due to huge memory usage of aom, we can't perform multiple encode
@@ -203,7 +204,10 @@ bool EncAVIF(u8** data, size_t* size, Frame *img) {
   encoder->maxQuantizerAlpha = 0;
 
   // relatively good choice between speed and size
-  encoder->speed = 5;
+  encoder->speed = 3;
+
+  // add some really fine noise to control banding
+  avifEncoderSetCodecSpecificOption(encoder, "film-grain-table", "dither.tbl");
 
   if (avifEncoderWrite(encoder, image, &output) == AVIF_RESULT_OK) {
     *data = output.data;
