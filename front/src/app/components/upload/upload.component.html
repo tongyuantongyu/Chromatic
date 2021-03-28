@@ -91,7 +91,8 @@
                ((uploading || uploaded) ? eachStatus.get(file).error : null) ||
                file?.name ||
                ('upload_file_name_unknown' | i18nSelect:locale.dict)">
-            <img [src]="file | asObjectUrl" alt="" class="preview-image" (load)="hideLoading(loadingHint)">
+            <img [src]="san.bypassSecurityTrustUrl(file | asDataUrl | async)" alt="" class="preview-image"
+                 (load)="finishLoading(loadingHint)">
             <button mat-button mat-icon-button class="remove-button" color="warn" (click)="removeFile(file)"
                     *ngIf="!uploading && !uploaded">
               <mat-icon>cancel</mat-icon>

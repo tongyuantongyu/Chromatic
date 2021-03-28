@@ -55,6 +55,14 @@ export class FileReaderService {
     });
   }
 
+  getObjectUrl(file: Blob): Observable<string> {
+    return new Observable(observer => {
+      this.ResourceBorrow$.pipe(first()).subscribe(_ => {
+        observer.next(URL.createObjectURL(file));
+      });
+    });
+  }
+
   constructor(@Optional() @Inject(FILE_READER_CONCURRENT) private readonly concurrent: number) {
     if (!concurrent) {
       this.concurrent = 1;

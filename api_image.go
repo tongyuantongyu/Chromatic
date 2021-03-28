@@ -167,14 +167,14 @@ func UploadSimple(r *UploadSimpleQ) (primitive.ObjectID, SErr) {
 		return primitive.ObjectID{}, EBadImage
 	}
 	
-	var dJ, dW, dP []byte
+	var dB, dW, dP []byte
 	
 	wg := sync.WaitGroup{}
 	wg.Add(3)
 	
 	go func() {
 		acquire()
-		dJ = Encode(f, "jpeg")
+		dB = Encode(f, "jpeg")
 		release()
 		wg.Done()
 	}()
@@ -200,7 +200,7 @@ func UploadSimple(r *UploadSimpleQ) (primitive.ObjectID, SErr) {
 	
 	wg.Wait()
 	
-	if dJ == nil || dW == nil || dP == nil {
+	if dB == nil || dW == nil || dP == nil {
 		return primitive.ObjectID{}, EEncodeFailed
 	}
 	
@@ -222,20 +222,31 @@ func UploadSimple(r *UploadSimpleQ) (primitive.ObjectID, SErr) {
 		return primitive.ObjectID{}, EUnknown
 	}
 	
-	min := len(r.Data)
+	extB := "jpeg"
+	min := 0
+	if len(r.Data) < len(dB) && (t == "jpeg" || t == "png") {
+		dB = r.Data
+		extB = t
+	}
 	
-	if t == "avif" {
-		if err := saveFile(dJ, hStr, hStr, "jpeg"); err != nil {
-			log.Printf("[Warn] failed saving file %s.jpg: %s\n", hStr, err)
-			removeFile(hStr)
-			return primitive.ObjectID{}, EUnknown
-		}
-		
-		files = append(files, ImageFormat{
-			Format: "jpeg",
-			Hash:   fileHash(dJ),
-		})
-		
+	if err := saveFile(dB, hStr, hStr, extB); err != nil {
+		log.Printf("[Warn] failed saving file %s.%s: %s\n", hStr, extB, err)
+		removeFile(hStr)
+		return primitive.ObjectID{}, EUnknown
+	}
+	
+	files = append(files, ImageFormat{
+		Format: "jpeg",
+		Hash:   fileHash(dB),
+	})
+	
+	min = len(dB)
+	
+	if len(r.Data) < len(dW) && t == "webp" {
+		dW = r.Data
+	}
+	
+	if len(dW) < len(dB) {
 		if err := saveFile(dW, hStr, hStr, "webp"); err != nil {
 			log.Printf("[Warn] failed saving file %s.webp: %s\n", hStr, err)
 			removeFile(hStr)
@@ -246,96 +257,8 @@ func UploadSimple(r *UploadSimpleQ) (primitive.ObjectID, SErr) {
 			Format: "webp",
 			Hash:   fileHash(dW),
 		})
-	} else if t == "webp" {
-		if err := saveFile(dJ, hStr, hStr, "jpeg"); err != nil {
-			log.Printf("[Warn] failed saving file %s.jpg: %s\n", hStr, err)
-			removeFile(hStr)
-			return primitive.ObjectID{}, EUnknown
-		}
 		
-		files = append(files, ImageFormat{
-			Format: "jpeg",
-			Hash:   fileHash(dJ),
-		})
-		
-		if len(dW) < len(r.Data) {
-			if err := saveFile(dW, hStr, hStr, "webp"); err != nil {
-				log.Printf("[Warn] failed saving file %s.webp: %s\n", hStr, err)
-				removeFile(hStr)
-				return primitive.ObjectID{}, EUnknown
-			}
-			
-			files = append(files, ImageFormat{
-				Format: "webp",
-				Hash:   fileHash(dW),
-			})
-		} else {
-			if err := saveFile(r.Data, hStr, hStr, "webp"); err != nil {
-				log.Printf("[Warn] failed saving file %s.webp: %s\n", hStr, err)
-				removeFile(hStr)
-				return primitive.ObjectID{}, EUnknown
-			}
-			
-			files = append(files, ImageFormat{
-				Format: "webp",
-				Hash:   fileHash(dW),
-			})
-		}
-	} else {
-		useOriginal := false
-		
-		if len(dJ) < min {
-			if err := saveFile(dJ, hStr, hStr, "jpeg"); err != nil {
-				log.Printf("[Warn] failed saving file %s.jpg: %s\n", hStr, err)
-				removeFile(hStr)
-				return primitive.ObjectID{}, EUnknown
-			}
-			
-			min = len(dJ)
-			files = append(files, ImageFormat{
-				Format: "jpeg",
-				Hash:   fileHash(dJ),
-			})
-		} else {
-			useOriginal = true
-		}
-		
-		if len(dW) < min {
-			if err := saveFile(dW, hStr, hStr, "webp"); err != nil {
-				log.Printf("[Warn] failed saving file %s.webp: %s\n", hStr, err)
-				removeFile(hStr)
-				return primitive.ObjectID{}, EUnknown
-			}
-			
-			min = len(dW)
-			files = append(files, ImageFormat{
-				Format: "webp",
-				Hash:   fileHash(dW),
-			})
-		} else if !useOriginal {
-			useOriginal = true
-		}
-		
-		if useOriginal {
-			if err := saveFile(r.Data, hStr, hStr, t); err != nil {
-				log.Printf("[Warn] failed saving file %s.%s: %s\n", hStr, t, err)
-				removeFile(hStr)
-				return primitive.ObjectID{}, EUnknown
-			}
-			
-			files = append(files, ImageFormat{
-				Format: t,
-				Hash:   fileHash(r.Data),
-			})
-		}
-	}
-	
-	if len(dW) < min {
 		min = len(dW)
-	}
-	
-	if len(dJ) < min {
-		min = len(dJ)
 	}
 	
 	if err := saveFile(r.Data, hStr, "original", "org"); err != nil {
@@ -576,12 +499,24 @@ func genAvifImage(r primitive.ObjectID) SErr {
 	if im.Original {
 		d, err = readFile(im.Storage, "original", "org")
 	} else {
+		if _, err := ci.UpdateOne(X(),
+			bson.M{"_id": im.ID},
+			bson.M{"$set": bson.M{"original": false}}); err != nil {
+			log.Printf("[Warn] failed remove original image flag: %s\n", err)
+			return EUnknown
+		}
 		return EMissingOriginal
 	}
 	
 	if err != nil {
 		log.Printf("[Warn] failed opening orginal image of %s: %s\n", im.Storage, err)
-		return EUnknown
+		if _, err := ci.UpdateOne(X(),
+			bson.M{"_id": im.ID},
+			bson.M{"$set": bson.M{"original": false}}); err != nil {
+			log.Printf("[Warn] failed remove original image flag: %s\n", err)
+			return EUnknown
+		}
+		return EMissingOriginal
 	}
 	
 	f, t := Decode(d, "")

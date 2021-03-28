@@ -680,7 +680,7 @@ func getImageFile(c *gin.Context) {
 	
 	im, err := GetImage(id)
 	
-	c.Header("Vary", "Accept, User-Agent, Origin, Referer")
+	c.Header("vary", "accept, user-Agent, origin, referer")
 	
 	if err == EImageNotExist {
 		c.Status(http.StatusNotFound)
@@ -691,6 +691,7 @@ func getImageFile(c *gin.Context) {
 	}
 	
 	//goland:noinspection GoNilness
+	c.Set("Req-From", origin)
 	if origin == config.Site.Host {
 	} else if VerifyHostname(origin, im.Origins) {
 		if origin != "" {
@@ -753,14 +754,13 @@ func getImageFile(c *gin.Context) {
 	c.Set("Served-Ext", ext)
 	
 	//goland:noinspection GoNilness
-	if origin != config.Site.Host {
+	if !config.Site.ReadOnly && origin != config.Site.Host {
 		if !hasAvif && im.View > config.Site.AvifThreshold - 1 {
 			_ = PostVisitImage(im.ID, true)
 		} else {
 			_ = PostVisitImage(im.ID, false)
 		}
 	}
-
 }
 
 func getImagePreview(c *gin.Context) {

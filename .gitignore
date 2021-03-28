@@ -1,7 +1,7 @@
 # IDE
 .idea
 
-debug-server
+dbg/debug-server
 exec
 test
 dev-docs

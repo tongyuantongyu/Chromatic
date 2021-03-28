@@ -69,6 +69,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     let hasNumber = false;
     let hasLowerCase = false;
     let hasUpperCase = false;
+    let hasOther = false;
     let i = value.length;
     while (i--) {
       const ord = value.charCodeAt(i);
@@ -78,9 +79,14 @@ export class RegisterComponent implements OnInit, OnDestroy {
         hasUpperCase = true;
       } else if (ord > 47 && ord < 58) {
         hasNumber = true;
+      } else {
+        hasOther = true;
       }
     }
-    return (hasNumber && hasUpperCase && hasLowerCase) ? null : {weakPassword: {value}};
+
+    const count = Number(hasLowerCase) + Number(hasUpperCase) + Number(hasNumber) + Number(hasOther);
+
+    return (count >= 3) ? null : {weakPassword: {value}};
   }
 
   PasswordIdenticalValidator(control: FormGroup): ValidationErrors | null {

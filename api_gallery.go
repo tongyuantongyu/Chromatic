@@ -63,7 +63,7 @@ func ListImage(r *ListImageQ) (*ListImageP, SErr) {
 	if r.Sort == "tag" {
 		opts.SetSort(bson.D{{"tag", 1}, {"upload", 1}})
 	} else {
-		opts.SetSort(bson.D{{"upload", 1}})
+		opts.SetSort(bson.D{{"upload", -1}})
 	}
 	opts.SetProjection(bson.M{
 		"user_id":   1,

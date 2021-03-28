@@ -21,6 +21,7 @@ import {generateOriginHints} from '../../utils';
 import {MatDialog} from '@angular/material/dialog';
 import {UploadAdvancedComponent} from '../../dialogs/upload-advanced/upload-advanced.component';
 import {TitleService} from '../../services/title.service';
+import {DomSanitizer} from '@angular/platform-browser';
 
 interface Progress {
   progress: number;
@@ -89,6 +90,7 @@ export class UploadComponent implements OnInit {
   constructor(public locale: LocaleService,
               public env: EnvironmentService,
               public pref: PreferenceService,
+              public san: DomSanitizer,
               private api: ApiService,
               private auth: AuthService,
               private msg: MessageService,
@@ -275,7 +277,7 @@ export class UploadComponent implements OnInit {
     }
   }
 
-  hideLoading(el: HTMLElement): void {
+  finishLoading(el: HTMLElement): void {
     el.classList.add('loaded');
   }
 

@@ -18,6 +18,8 @@ type ConfigSite struct {
 
 	WriteLog bool `toml:"write_log"`
 	LogFile string `toml:"log_file"`
+	
+	ReadOnly bool `toml:"read_only"`
 }
 
 type ConfigDatabase struct {

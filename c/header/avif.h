@@ -56,8 +56,8 @@ extern "C" {
 // downstream projects to do greater-than preprocessor checks on AVIF_VERSION
 // to leverage in-development code without breaking their stable builds.
 #define AVIF_VERSION_MAJOR 0
-#define AVIF_VERSION_MINOR 8
-#define AVIF_VERSION_PATCH 4
+#define AVIF_VERSION_MINOR 9
+#define AVIF_VERSION_PATCH 0
 #define AVIF_VERSION_DEVEL 1
 #define AVIF_VERSION \
     ((AVIF_VERSION_MAJOR * 1000000) + (AVIF_VERSION_MINOR * 10000) + (AVIF_VERSION_PATCH * 100) + AVIF_VERSION_DEVEL)
@@ -65,6 +65,9 @@ extern "C" {
 typedef int avifBool;
 #define AVIF_TRUE 1
 #define AVIF_FALSE 0
+
+// a 12 hour AVIF image sequence, running at 60 fps (a basic sanity check as this is quite ridiculous)
+#define AVIF_DEFAULT_IMAGE_COUNT_LIMIT (12 * 3600 * 60)
 
 #define AVIF_QUANTIZER_LOSSLESS 0
 #define AVIF_QUANTIZER_BEST_QUALITY 0
@@ -217,7 +220,7 @@ typedef enum avifRange
 // ---------------------------------------------------------------------------
 // CICP enums - https://www.itu.int/rec/T-REC-H.273-201612-I/en
 
-typedef enum avifColorPrimaries
+enum
 {
     // This is actually reserved, but libavif uses it as a sentinel value.
     AVIF_COLOR_PRIMARIES_UNKNOWN = 0,
@@ -235,13 +238,14 @@ typedef enum avifColorPrimaries
     AVIF_COLOR_PRIMARIES_SMPTE431 = 11,
     AVIF_COLOR_PRIMARIES_SMPTE432 = 12, // DCI P3
     AVIF_COLOR_PRIMARIES_EBU3213 = 22
-} avifColorPrimaries;
+};
+typedef uint16_t avifColorPrimaries; // AVIF_COLOR_PRIMARIES_*
 
 // outPrimaries: rX, rY, gX, gY, bX, bY, wX, wY
 AVIF_API void avifColorPrimariesGetValues(avifColorPrimaries acp, float outPrimaries[8]);
 AVIF_API avifColorPrimaries avifColorPrimariesFind(const float inPrimaries[8], const char ** outName);
 
-typedef enum avifTransferCharacteristics
+enum
 {
     // This is actually reserved, but libavif uses it as a sentinel value.
     AVIF_TRANSFER_CHARACTERISTICS_UNKNOWN = 0,
@@ -263,9 +267,10 @@ typedef enum avifTransferCharacteristics
     AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084 = 16, // PQ
     AVIF_TRANSFER_CHARACTERISTICS_SMPTE428 = 17,
     AVIF_TRANSFER_CHARACTERISTICS_HLG = 18
-} avifTransferCharacteristics;
+};
+typedef uint16_t avifTransferCharacteristics; // AVIF_TRANSFER_CHARACTERISTICS_*
 
-typedef enum avifMatrixCoefficients
+enum
 {
     AVIF_MATRIX_COEFFICIENTS_IDENTITY = 0,
     AVIF_MATRIX_COEFFICIENTS_BT709 = 1,
@@ -281,7 +286,8 @@ typedef enum avifMatrixCoefficients
     AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL = 12,
     AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_CL = 13,
     AVIF_MATRIX_COEFFICIENTS_ICTCP = 14
-} avifMatrixCoefficients;
+};
+typedef uint16_t avifMatrixCoefficients; // AVIF_MATRIX_COEFFICIENTS_*
 
 // ---------------------------------------------------------------------------
 // Optional transformation structs
@@ -367,6 +373,7 @@ typedef struct avifImage
     uint8_t * alphaPlane;
     uint32_t alphaRowBytes;
     avifBool imageOwnsAlphaPlane;
+    avifBool alphaPremultiplied;
 
     // ICC Profile
     avifRWData icc;
@@ -415,6 +422,30 @@ AVIF_API void avifImageFreePlanes(avifImage * image, uint32_t planes);     // Ig
 AVIF_API void avifImageStealPlanes(avifImage * dstImage, avifImage * srcImage, uint32_t planes);
 
 // ---------------------------------------------------------------------------
+// Understanding maxThreads
+//
+// libavif's structures and API use the setting 'maxThreads' in a few places. The intent of this
+// setting is to limit concurrent thread activity/usage, not necessarily to put a hard ceiling on
+// how many sleeping threads happen to exist behind the scenes. The goal of this setting is to
+// ensure that at any given point during libavif's encoding or decoding, no more than *maxThreads*
+// threads are simultaneously **active and taking CPU time**.
+//
+// As an important example, when encoding an image sequence that has an alpha channel, two
+// long-lived underlying AV1 encoders must simultaneously exist (one for color, one for alpha). For
+// each additional frame fed into libavif, its YUV planes are fed into one instance of the AV1
+// encoder, and its alpha plane is fed into another. These operations happen serially, so only one
+// of these AV1 encoders is ever active at a time. However, the AV1 encoders might pre-create a
+// pool of worker threads upon initialization, so during this process, twice the amount of worker
+// threads actually simultaneously exist on the machine, but half of them are guaranteed to be
+// sleeping.
+//
+// This design ensures that AV1 implementations are given as many threads as possible to ensure a
+// speedy encode or decode, despite the complexities of occasionally needing two AV1 codec instances
+// (due to alpha payloads being separate from color payloads). If your system has a hard ceiling on
+// the number of threads that can ever be in flight at a given time, please account for this
+// accordingly.
+
+// ---------------------------------------------------------------------------
 // Optional YUV<->RGB support
 
 // To convert to/from RGB, create an avifRGBImage on the stack, call avifRGBImageSetDefaults() on
@@ -444,7 +475,7 @@ AVIF_API void avifImageStealPlanes(avifImage * dstImage, avifImage * srcImage, u
 typedef enum avifRGBFormat
 {
     AVIF_RGB_FORMAT_RGB = 0,
-    AVIF_RGB_FORMAT_RGBA,
+    AVIF_RGB_FORMAT_RGBA, // This is the default format set in avifRGBImageSetDefaults().
     AVIF_RGB_FORMAT_ARGB,
     AVIF_RGB_FORMAT_BGR,
     AVIF_RGB_FORMAT_BGRA,
@@ -470,13 +501,17 @@ typedef struct avifRGBImage
     avifRGBFormat format; // all channels are always full range
     avifChromaUpsampling chromaUpsampling; // Defaults to AVIF_CHROMA_UPSAMPLING_AUTOMATIC: How to upsample non-4:4:4 UV (ignored for 444) when converting to RGB.
                                            // Unused when converting to YUV. avifRGBImageSetDefaults() prefers quality over speed.
-    avifBool ignoreAlpha; // Used for XRGB formats, treats formats containing alpha (such as ARGB) as if they were
-                          // RGB, treating the alpha bits as if they were all 1.
+    avifBool ignoreAlpha;        // Used for XRGB formats, treats formats containing alpha (such as ARGB) as if they were
+                                 // RGB, treating the alpha bits as if they were all 1.
+    avifBool alphaPremultiplied; // indicates if RGB value is pre-multiplied by alpha. Default: false
 
     uint8_t * pixels;
     uint32_t rowBytes;
 } avifRGBImage;
 
+// Sets rgb->width, rgb->height, and rgb->depth to image->width, image->height, and image->depth.
+// Sets rgb->pixels to NULL and rgb->rowBytes to 0. Sets the other fields of 'rgb' to default
+// values.
 AVIF_API void avifRGBImageSetDefaults(avifRGBImage * rgb, const avifImage * image);
 AVIF_API uint32_t avifRGBImagePixelSize(const avifRGBImage * rgb);
 
@@ -488,6 +523,12 @@ AVIF_API void avifRGBImageFreePixels(avifRGBImage * rgb);
 AVIF_API avifResult avifImageRGBToYUV(avifImage * image, const avifRGBImage * rgb);
 AVIF_API avifResult avifImageYUVToRGB(const avifImage * image, avifRGBImage * rgb);
 
+// Premultiply handling functions.
+// (Un)premultiply is automatically done by the main conversion functions above,
+// so usually you don't need to call these. They are there for convenience.
+AVIF_API avifResult avifRGBImagePremultiplyAlpha(avifRGBImage * rgb);
+AVIF_API avifResult avifRGBImageUnpremultiplyAlpha(avifRGBImage * rgb);
+
 // ---------------------------------------------------------------------------
 // YUV Utils
 
@@ -495,51 +536,6 @@ AVIF_API int avifFullToLimitedY(int depth, int v);
 AVIF_API int avifFullToLimitedUV(int depth, int v);
 AVIF_API int avifLimitedToFullY(int depth, int v);
 AVIF_API int avifLimitedToFullUV(int depth, int v);
-
-typedef enum avifReformatMode
-{
-    AVIF_REFORMAT_MODE_YUV_COEFFICIENTS = 0, // Normal YUV conversion using coefficients
-    AVIF_REFORMAT_MODE_IDENTITY,             // Pack GBR directly into YUV planes (AVIF_MATRIX_COEFFICIENTS_IDENTITY)
-    AVIF_REFORMAT_MODE_YCGCO                 // YUV conversion using AVIF_MATRIX_COEFFICIENTS_YCGCO
-} avifReformatMode;
-
-typedef struct avifReformatState
-{
-    // YUV coefficients
-    float kr;
-    float kg;
-    float kb;
-
-    uint32_t yuvChannelBytes;
-    uint32_t rgbChannelBytes;
-    uint32_t rgbChannelCount;
-    uint32_t rgbPixelBytes;
-    uint32_t rgbOffsetBytesR;
-    uint32_t rgbOffsetBytesG;
-    uint32_t rgbOffsetBytesB;
-    uint32_t rgbOffsetBytesA;
-
-    uint32_t yuvDepth;
-    uint32_t rgbDepth;
-    avifRange yuvRange;
-    int yuvMaxChannel;
-    int rgbMaxChannel;
-    float yuvMaxChannelF;
-    float rgbMaxChannelF;
-    float yBias; // minimum y value
-    float uvBias; // the value of 0.5 for the appropriate bit depth [128, 512, 2048]
-    float yRange; // difference between max and min y
-    float uvRange; // difference between max and min uv
-
-    avifPixelFormatInfo formatInfo;
-
-    // LUTs for going from YUV limited/full unorm -> full range RGB FP32
-    float unormFloatTableY[1 << 12];
-    float unormFloatTableUV[1 << 12];
-
-    avifReformatMode mode;
-} avifReformatState;
-AVIF_API avifBool avifPrepareReformatState(const avifImage * image, const avifRGBImage * rgb, avifReformatState * state);
 
 // ---------------------------------------------------------------------------
 // Codec selection
@@ -616,6 +612,8 @@ typedef struct avifIO
 {
     avifIODestroyFunc destroy;
     avifIOReadFunc read;
+
+    // This is reserved for future use - but currently ignored. Set it to a null pointer.
     avifIOWriteFunc write;
 
     // If non-zero, this is a hint to internal structures of the max size offered by the content
@@ -687,7 +685,7 @@ typedef struct avifDecoder
     // Defaults to AVIF_CODEC_CHOICE_AUTO: Preference determined by order in availableCodecs table (avif.c)
     avifCodecChoice codecChoice;
 
-    // Defaults to 1.
+    // Defaults to 1. -- NOTE: Please see the "Understanding maxThreads" comment block above
     int maxThreads;
 
     // avifs can have multiple sets of images in them. This specifies which to decode.
@@ -729,6 +727,12 @@ typedef struct avifDecoder
     // If you don't actually leverage this data, it is best to ignore it here.
     avifBool ignoreExif;
     avifBool ignoreXMP;
+
+    // This provides an upper bound on how many images the decoder is willing to attempt to decode,
+    // to provide a bit of protection from malicious or malformed AVIFs citing millions upon
+    // millions of frames, only to be invalid later. The default is AVIF_DEFAULT_IMAGE_COUNT_LIMIT
+    // (see comment above), and setting this to 0 disables the limit.
+    uint32_t imageCountLimit;
 
     // stats from the most recent read, possibly 0s if reading an image sequence
     avifIOStats ioStats;
@@ -829,6 +833,7 @@ struct avifCodecSpecificOptions;
 // Notes:
 // * If avifEncoderWrite() returns AVIF_RESULT_OK, output must be freed with avifRWDataFree()
 // * If (maxThreads < 2), multithreading is disabled
+//   * NOTE: Please see the "Understanding maxThreads" comment block above
 // * Quality range: [AVIF_QUANTIZER_BEST_QUALITY - AVIF_QUANTIZER_WORST_QUALITY]
 // * To enable tiling, set tileRowsLog2 > 0 and/or tileColsLog2 > 0.
 //   Tiling values range [0-6], where the value indicates a request for 2^n tiles in that dimension.

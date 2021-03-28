@@ -4,7 +4,7 @@ package native
 
 // #cgo CFLAGS: -I./../c/
 // #cgo !windows CFLAGS: -I/opt/mozjpeg/include/
-// #cgo LDFLAGS: -L${SRCDIR}/../c/release/
+// #cgo LDFLAGS: -L${SRCDIR}/../c/debug/
 // #cgo windows LDFLAGS: -L${SRCDIR}/../c/libs/
 // #cgo !windows LDFLAGS: -L/opt/mozjpeg/lib64/
 // #cgo LDFLAGS: -static -lcImg -lavif -laom -ldav1d -lwebp -lwebpdemux -ljpeg -lpng -lz
@@ -14,6 +14,7 @@ package native
 import "C"
 
 import (
+	"log"
 	"runtime"
 	"unsafe"
 )
@@ -50,6 +51,7 @@ func GetMaxThread() uint32 {
 }
 
 func ReleaseFrame(f *Frame) bool {
+	log.Printf("Frame %p is about to be released.\n", f)
 	return bool(C.ReleaseFrame((*C.struct_Frame)(&f.f)))
 }
 

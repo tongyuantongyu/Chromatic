@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/gin-gonic/gin"
-	"github.com/mattn/go-colorable"
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
 	"runtime"
 	"time"
 )
@@ -43,27 +41,27 @@ func init() {
 	} else {
 		native.SetMaxThread(uint32(config.Site.Thread - 1))
 	}
+	
+	
+	if !config.Site.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
+	if config.Site.WriteLog {
+		if f, err := CreateFileLog(config.Site.LogFile); err == nil {
+			gin.DefaultWriter = io.MultiWriter(gin.DefaultWriter, f)
+		} else {
+			log.Fatalf("Failed open log file: %s", err)
+		}
+	}
 	
 	// Setup database
 	if err := InitDB(); err != nil {
 		log.Fatalf("Failed init database: %s", err)
 	}
 	
-	if !config.Site.Debug {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	if runtime.GOOS == "windows" {
-		gin.DefaultWriter = colorable.NewColorableStdout()
-	}
-
-	if config.Site.WriteLog {
-		if f, err := os.OpenFile(config.Site.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666); err == nil {
-			gin.DefaultWriter = io.MultiWriter(gin.DefaultWriter, f)
-		} else {
-			log.Fatalf("Failed open log file: %s", err)
-		}
+	if config.Site.ReadOnly {
+		return
 	}
 	
 	InitUser()
@@ -85,68 +83,71 @@ func init() {
 }
 
 func RegisterRoute(r *gin.Engine) {
-	a := r.Group("/api", JWTRetrieve())
-	{
-		user := a.Group("/user")
+	if !config.Site.ReadOnly {
+		a := r.Group("/api", JWTRetrieve())
 		{
-			user.GET("/exist/:name", userExist)
-			user.GET("/get/:id", getUser)
-			user.POST("/register", register)
-			user.POST("/login", login)
-			authed := user.Group("/", JWTAuth())
+			user := a.Group("/user")
 			{
-				authed.POST("/changePassword", changePassword)
-				authed.POST("/setAvatar", setAvatar)
-				authed.GET("/resetAvatar", resetAvatar)
-				admin := authed.Group("/admin", AdminOnly())
+				user.GET("/exist/:name", userExist)
+				user.GET("/get/:id", getUser)
+				user.POST("/register", register)
+				user.POST("/login", login)
+				authed := user.Group("/", JWTAuth())
 				{
-					admin.POST("/setAvatar", setAvatarP)
-					admin.GET("/resetAvatar/:id", resetAvatarP)
-					admin.POST("/list", listUser)
-					admin.POST("/add", addUser)
-					admin.POST("/remove", removeUser)
-					admin.POST("/password", setPassword)
-					admin.POST("/permission", setUserPermission)
+					authed.POST("/changePassword", changePassword)
+					authed.POST("/setAvatar", setAvatar)
+					authed.GET("/resetAvatar", resetAvatar)
+					admin := authed.Group("/admin", AdminOnly())
+					{
+						admin.POST("/setAvatar", setAvatarP)
+						admin.GET("/resetAvatar/:id", resetAvatarP)
+						admin.POST("/list", listUser)
+						admin.POST("/add", addUser)
+						admin.POST("/remove", removeUser)
+						admin.POST("/password", setPassword)
+						admin.POST("/permission", setUserPermission)
+					}
+				}
+			}
+			invite := a.Group("/invite", JWTAuth(), AdminOnly())
+			{
+				invite.POST("/list", listInvite)
+				invite.POST("/add", addInvite)
+				invite.GET("/remove/:code", removeInvite)
+				invite.POST("/setTimes", setInviteTimes)
+			}
+			gallery := a.Group("/gallery")
+			{
+				gallery.POST("/list", listImage)
+				gallery.GET("/listTags/:id", listImageTags)
+				gallery.POST("/listWithTag", listImageWithTag)
+				gallery.POST("/listContainsTag", listImageContainsTag)
+				gallery.POST("/set", JWTAuth(), AdminOrLimited(), setImageInfo)
+			}
+			image := a.Group("/image")
+			{
+				image.GET("/get/:id", getImage)
+				image.POST("/remove", JWTAuth(), AdminOrLimited(), removeImage)
+				upload := a.Group("/upload", JWTAuth(), ActiveUser())
+				{
+					upload.POST("/simple", uploadSimple)
+					advanced := upload.Group("/", Privileged())
+					{
+						advanced.POST("/advanced", uploadAdvanced)
+						advanced.POST("/update", updateImage)
+					}
 				}
 			}
 		}
-		invite := a.Group("/invite", JWTAuth(), AdminOnly())
-		{
-			invite.POST("/list", listInvite)
-			invite.POST("/add", addInvite)
-			invite.GET("/remove/:code", removeInvite)
-			invite.POST("/setTimes", setInviteTimes)
-		}
-		gallery := a.Group("/gallery")
-		{
-			gallery.POST("/list", listImage)
-			gallery.GET("/listTags/:id", listImageTags)
-			gallery.POST("/listWithTag", listImageWithTag)
-			gallery.POST("/listContainsTag", listImageContainsTag)
-			gallery.POST("/set", JWTAuth(), AdminOrLimited(), setImageInfo)
-		}
-		image := a.Group("/image")
-		{
-			image.GET("/get/:id", getImage)
-			image.POST("/remove", JWTAuth(), AdminOrLimited(), removeImage)
-			upload := a.Group("/upload", JWTAuth(), ActiveUser())
-			{
-				upload.POST("/simple", uploadSimple)
-				advanced := upload.Group("/", Privileged())
-				{
-					advanced.POST("/advanced", uploadAdvanced)
-					advanced.POST("/update", updateImage)
-				}
-			}
-		}
+		r.GET("/avatar/:id", getAvatarFile)
+		r.HEAD("/avatar/:id", getAvatarFile)
+		r.GET("/preview/:id", getImagePreview)
+		r.HEAD("/preview/:id", getImagePreview)
+		r.POST("/preference", setFormatPreference)
 	}
+	
 	r.GET("/image/:id", getImageFile)
 	r.HEAD("/image/:id", getImageFile)
-	r.GET("/avatar/:id", getAvatarFile)
-	r.HEAD("/avatar/:id", getAvatarFile)
-	r.GET("/preview/:id", getImagePreview)
-	r.HEAD("/preview/:id", getImagePreview)
-	r.POST("/preference", setFormatPreference)
 	
 	r.HandleMethodNotAllowed = true
 	r.NoRoute(ServeStatic(""))
@@ -174,7 +175,18 @@ func main() {
 			}
 		}
 
-		return fmt.Sprintf("[LOG] %v |%s %3d %s| %13v | %15s |%s %-7s %s%s %s %#v\n%s",
+		from := ""
+
+		if fromI, exist := param.Keys["Req-From"]; exist {
+			if fromS, ok := fromI.(string); ok {
+				if fromS == "" {
+					fromS = "no-referer"
+				}
+				from = fmt.Sprintf("(from: %5s)", fromS)
+			}
+		}
+
+		return fmt.Sprintf("[LOG] %v |%s %3d %s| %13v | %15s |%s %-7s %s%s %s %s %#v\n%s",
 			param.TimeStamp.Format("2006/01/02 - 15:04:05"),
 			statusColor, param.StatusCode, resetColor,
 			param.Latency,
@@ -182,6 +194,7 @@ func main() {
 			methodColor, param.Method, resetColor,
 			param.Path,
 			ext,
+			from,
 			param.Request.UserAgent(),
 			param.ErrorMessage,
 		)

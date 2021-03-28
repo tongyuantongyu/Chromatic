@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/crypto/scrypt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -36,7 +38,7 @@ func X() context.Context {
 // Xd return a context cancel after given duration.
 // This is an convenient method for mongodb operations
 func Xd(duration time.Duration) context.Context {
-	ctx, _ := context.WithTimeout(context.Background(), time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), duration)
 	return ctx
 }
 
@@ -50,7 +52,7 @@ func PasswordVerify(password string) bool {
 		return false
 	}
 	
-	var n, a, A bool
+	var n, a, A, o bool
 	
 	for _, c := range []byte(password) {
 		if c >= '0' && c <= '9' {
@@ -59,10 +61,29 @@ func PasswordVerify(password string) bool {
 			a = true
 		} else if c >= 'A' && c <= 'Z' {
 			A = true
+		} else {
+			o = true
 		}
 	}
+
+	count := 0
+	if n {
+		count++
+	}
+
+	if a {
+		count++
+	}
+
+	if A {
+		count++
+	}
+
+	if o {
+		count++
+	}
 	
-	return n && a && A
+	return count >= 3
 }
 
 func RecaptchaVerify(response string) SErr {
@@ -86,5 +107,56 @@ func RecaptchaVerify(response string) SErr {
 		return EBadRecaptcha
 	} else {
 		return EOk
+	}
+}
+
+type fileLogger struct {
+	template string
+	year int
+	month time.Month
+	curFile *os.File
+}
+
+func (l *fileLogger) refresh() (err error) {
+	t := time.Now()
+	year, month, _ := t.Date()
+	if l.year == year || l.month == month {
+		return
+	}
+	
+	l.year = year
+	l.month = month
+	
+	if l.curFile != nil {
+		if err = l.curFile.Close(); err != nil {
+			return
+		}
+	}
+	
+	l.curFile, err = os.OpenFile(fmt.Sprintf(l.template, l.year, l.month), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	return
+}
+
+func (l *fileLogger) Write(p []byte) (n int, err error) {
+	if err := l.refresh(); err != nil {
+		return 0, err
+	}
+	
+	return l.curFile.Write(p)
+}
+
+func (l *fileLogger) Close() error {
+	return l.curFile.Close()
+}
+
+func CreateFileLog(template string) (*fileLogger, error) {
+	l := &fileLogger{
+		template: template,
+	}
+	
+	if err := l.refresh(); err != nil {
+		return nil, err
+	} else {
+		return l, nil
 	}
 }
