@@ -73,7 +73,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   hoverExpand = false;
   subExpand = 0;
   lastEvent = 0;
-  lastScroll: number;
 
   avatarError = false;
   refresh = '';
@@ -156,24 +155,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.lastScroll = this.scroll.status.offsetH;
-
-    if (this.lastScroll !== 0) {
-      this.scrollExpand = false;
-    }
-
     this.updateData();
 
     this.scroll.status$.pipe(auditTime(50), takeUntil(this.destroy$)).subscribe(e => {
-      if (e.offsetH > this.lastScroll) {
-        this.scrollExpand = false;
-        this.updateData();
-      } else if (e.offsetH + 150 < this.lastScroll || e.offsetH === 0) {
-        this.scrollExpand = true;
-        this.updateData();
-      }
-
-      this.lastScroll = e.offsetH;
+      this.scrollExpand = e.offsetH < 50;
+      this.updateData();
     });
   }
 

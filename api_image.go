@@ -499,13 +499,8 @@ func genAvifImage(r primitive.ObjectID) SErr {
 	if im.Original {
 		d, err = readFile(im.Storage, "original", "org")
 	} else {
-		if _, err := ci.UpdateOne(X(),
-			bson.M{"_id": im.ID},
-			bson.M{"$set": bson.M{"original": false}}); err != nil {
-			log.Printf("[Warn] failed remove original image flag: %s\n", err)
-			return EUnknown
-		}
-		return EMissingOriginal
+		// missing original. just ignore.
+		return EOk
 	}
 	
 	if err != nil {

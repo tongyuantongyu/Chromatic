@@ -48,11 +48,9 @@ func init() {
 	}
 
 	if config.Site.WriteLog {
-		if f, err := CreateFileLog(config.Site.LogFile); err == nil {
-			gin.DefaultWriter = io.MultiWriter(gin.DefaultWriter, f)
-		} else {
-			log.Fatalf("Failed open log file: %s", err)
-		}
+		gin.DefaultWriter = io.MultiWriter(gin.DefaultWriter, &fileLogger{
+			template: config.Site.LogFile,
+		})
 	}
 	
 	// Setup database

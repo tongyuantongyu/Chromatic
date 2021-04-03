@@ -118,9 +118,8 @@ type fileLogger struct {
 }
 
 func (l *fileLogger) refresh() (err error) {
-	t := time.Now()
-	year, month, _ := t.Date()
-	if l.year == year || l.month == month {
+	year, month, _ := time.Now().Date()
+	if l.year == year && l.month == month {
 		return
 	}
 	
@@ -147,16 +146,4 @@ func (l *fileLogger) Write(p []byte) (n int, err error) {
 
 func (l *fileLogger) Close() error {
 	return l.curFile.Close()
-}
-
-func CreateFileLog(template string) (*fileLogger, error) {
-	l := &fileLogger{
-		template: template,
-	}
-	
-	if err := l.refresh(); err != nil {
-		return nil, err
-	} else {
-		return l, nil
-	}
 }

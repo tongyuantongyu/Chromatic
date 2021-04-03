@@ -115,6 +115,7 @@ export class UploadComponent implements OnInit {
   dragTimeoutId = 0;
 
   files: File[] = [];
+  loadedFiles: Set<File> = new Set();
   fileUrls: string[] = [];
 
   detail = false;
@@ -277,12 +278,18 @@ export class UploadComponent implements OnInit {
     }
   }
 
-  finishLoading(el: HTMLElement): void {
-    el.classList.add('loaded');
+  finishLoading(file: File): void {
+    console.log('loaded', file.name);
+    this.loadedFiles.add(file);
+  }
+
+  fileTrackBy(id: number, item: File): string {
+    return item.name + item.size + item.lastModified;
   }
 
   removeFile(file: File): void {
     this.files.splice(this.files.indexOf(file), 1);
+    this.loadedFiles.delete(file);
 
     if (this.files.length === 0) {
       this.dragArea = true;
@@ -324,6 +331,7 @@ export class UploadComponent implements OnInit {
     this.dragOptions.disabled = false;
 
     this.files = [];
+    this.loadedFiles.clear();
 
     this.detail = false;
     this.limitHeight = true;

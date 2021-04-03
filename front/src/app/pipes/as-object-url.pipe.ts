@@ -12,8 +12,8 @@ export class AsObjectUrlPipe implements PipeTransform, OnDestroy {
   }
   private objectUrl: string;
 
-  transform(value: Blob): Observable<string> {
-    return this.reader.getObjectUrl(value).pipe(tap(url => this.objectUrl = url));
+  transform(value: Blob): string {
+    return URL.createObjectURL(value);
   }
 
   ngOnDestroy(): void {
