@@ -13,6 +13,13 @@ import (
 	"log"
 )
 
+func SafetyHeader() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("strict-transport-security", "max-age=31536000")
+		c.Header("content-security-policy", "upgrade-insecure-requests")
+	}
+}
+
 func CreateJWT(u *User) (string, error) {
 	claims := UserJWT{
 		Name:           u.Name,

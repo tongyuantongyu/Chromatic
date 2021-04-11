@@ -23,10 +23,6 @@ avif_threshold = 100
 debug = false
 # compression thread count (0 for auto)
 thread = 0
-# write to log file
-write_log = false
-# log file
-log_file = "server-%04d-%02d.log"
 
 [database]
 # uri to connect to mongodb
@@ -49,3 +45,5 @@ recaptcha = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
 cert = ""
 # tls cert key file
 key = ""
+# promote https in header
+promote = true

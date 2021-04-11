@@ -678,6 +678,11 @@ func getImageFile(c *gin.Context) {
 		}
 	}
 	
+	// Stupid LK
+	if origin == "" && strings.HasPrefix(ua, "Dart") {
+		origin = "www.lightnovel.us"
+	}
+	
 	im, err := GetImage(id)
 	
 	c.Header("vary", "accept, user-Agent, origin, referer")

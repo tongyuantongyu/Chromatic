@@ -207,7 +207,11 @@ bool EncAVIF(u8** data, size_t* size, Frame *img) {
   encoder->speed = 3;
 
   // add some really fine noise to control banding
-  avifEncoderSetCodecSpecificOption(encoder, "film-grain-table", "dither.tbl");
+  avifEncoderSetCodecSpecificOption(encoder, "c:film-grain-table", "dither.tbl");
+
+  // encoder config tweaking
+  avifEncoderSetCodecSpecificOption(encoder, "c:aq-mode", "2");
+  avifEncoderSetCodecSpecificOption(encoder, "c:tune", "ssim");
 
   if (avifEncoderWrite(encoder, image, &output) == AVIF_RESULT_OK) {
     *data = output.data;

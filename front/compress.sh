@@ -22,10 +22,10 @@ cp ./*.map tmp
 
 (
   cd tmp || exit
-  for file in *; do brotli -o "$file".br "$file"; done
+  printf "%s\0" * | xargs -0 -P 6 -I @ brotli -o "@.br" "@"
   mv ./*.br ../
   cp ../*.ico ./
-  for file in *; do zopfli --i100 "$file"; done
+  printf "%s\0" * | xargs -0 -P 6 -I @ zopfli --i5 "@"
   mv ./*.gz ../
   cd ..
 )

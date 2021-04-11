@@ -37,6 +37,7 @@ type ConfigSecurity struct {
 type ConfigHTTPS struct {
 	Cert string `toml:"cert"`
 	Key string `toml:"key"`
+	Promote bool `toml:"promote"`
 }
 
 type Config struct {
@@ -71,4 +72,5 @@ func (c *Config) SetDefault() {
 	
 	c.HTTPS.Cert = ""
 	c.HTTPS.Key = ""
+	c.HTTPS.Promote = false
 }

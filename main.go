@@ -81,6 +81,10 @@ func init() {
 }
 
 func RegisterRoute(r *gin.Engine) {
+	if config.HTTPS.Promote {
+		r.Use(SafetyHeader())
+	}
+	
 	if !config.Site.ReadOnly {
 		a := r.Group("/api", JWTRetrieve())
 		{
